@@ -1,0 +1,42 @@
+﻿CREATE SCHEMA outbox_pattern;
+
+CREATE TABLE IF NOT EXISTS outbox_pattern.tbl_outbox
+(
+    "position" bigint NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 9223372036854775807 CACHE 1 ),
+    message_id uuid GENERATED ALWAYS AS (((message_content ->> 'Id'::text))::uuid) STORED,
+    pubsub_name text COLLATE pg_catalog."default" NOT NULL,
+    topic_name text COLLATE pg_catalog."default" NOT NULL,
+    created_at timestamp with time zone NOT NULL DEFAULT now(),
+    created_date date NOT NULL DEFAULT (now())::date,
+    message_type text COLLATE pg_catalog."default" NOT NULL,
+    message_content jsonb NOT NULL,
+    CONSTRAINT tbl_outbox_pkey PRIMARY KEY (created_date, "position")
+) PARTITION BY RANGE (created_date);
+
+ALTER TABLE IF EXISTS outbox_pattern.tbl_outbox
+    OWNER to postgres;
+
+CREATE PUBLICATION pub_outbox FOR TABLE outbox_pattern.tbl_outbox WITH (publish = 'insert');
+
+SELECT * FROM pg_create_logical_replication_slot('repslot_outbox', 'pgoutput');
+
+
+
+
+-- Table: public.tbl_greeting
+
+-- DROP TABLE IF EXISTS public.tbl_greeting;
+
+CREATE TABLE IF NOT EXISTS public.tbl_greeting
+(
+    id bigint NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 9223372036854775807 CACHE 1 ),
+    "from" text COLLATE pg_catalog."default" NOT NULL,
+    "to" text COLLATE pg_catalog."default" NOT NULL,
+    message text COLLATE pg_catalog."default" NOT NULL,
+    CONSTRAINT tbl_greeting_pkey PRIMARY KEY (id)
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.tbl_greeting
+    OWNER to postgres;
