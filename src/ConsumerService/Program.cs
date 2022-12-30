@@ -1,3 +1,7 @@
+using Npgsql;
+using OpenTelemetry;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Orleans.Configuration;
 using System.Net;
 
@@ -35,8 +39,32 @@ public class Program
                     options.SiloPort = 11112;
                     options.GatewayPort = 0;
                 })
+                //For tracing
+                .AddActivityPropagation()
                 .ConfigureLogging(logging => logging.AddConsole());
         });
+
+        //Open Telemetry Configuration
+        // Define some important constants to initialize tracing with
+        var serviceName = "mod-daprwithfamousactors-take2-consumer";
+        var serviceVersion = typeof(Program).Assembly.GetName().Version?.ToString() ?? "?";
+
+        builder.Services.AddOpenTelemetry().WithTracing(tracerProviderBuilder =>
+        {
+            tracerProviderBuilder
+                .AddZipkinExporter()
+                .AddSource(serviceName)
+
+                //orleans
+                .AddSource("Microsoft.Orleans.Application")
+
+                .SetResourceBuilder(
+                    ResourceBuilder.CreateDefault()
+                        .AddService(serviceName: serviceName, serviceVersion: serviceVersion))
+                .AddHttpClientInstrumentation()
+                .AddAspNetCoreInstrumentation()
+                .AddNpgsql();
+        }).StartWithHost();
 
         var app = builder.Build();
 

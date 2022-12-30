@@ -1,4 +1,8 @@
 using Dapr.Client;
+using Npgsql;
+using OpenTelemetry;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Orleans.Configuration;
 using PublisherService.Core.Database.Config;
 using PublisherService.Core.Database.OutboxPattern.Orleans;
@@ -57,8 +61,32 @@ public class Program
                 .AddStartupTask<DbPartitionCreationStartupTask>()
                 .ConfigureServices(conf => conf.AddSingleton<IOutboxProcessor, OutboxProcessor>())
                 .AddGrainService<OutboxListenerGrainService>()
+                //For tracing
+                .AddActivityPropagation()
                 .ConfigureLogging(logging => logging.AddConsole());
         });
+
+        //Open Telemetry Configuration
+        // Define some important constants to initialize tracing with
+        var serviceName = "mod-daprwithfamousactors-take2-publisher";
+        var serviceVersion = typeof(Program).Assembly.GetName().Version?.ToString() ?? "?";
+
+        builder.Services.AddOpenTelemetry().WithTracing(tracerProviderBuilder =>
+        {
+            tracerProviderBuilder
+                .AddZipkinExporter()
+                .AddSource(serviceName)
+
+                //orleans
+                .AddSource("Microsoft.Orleans.Application")
+
+                .SetResourceBuilder(
+                    ResourceBuilder.CreateDefault()
+                        .AddService(serviceName: serviceName, serviceVersion: serviceVersion))
+                .AddHttpClientInstrumentation()
+                .AddAspNetCoreInstrumentation()
+                .AddNpgsql();
+        }).StartWithHost();
 
         var app = builder.Build();
 
