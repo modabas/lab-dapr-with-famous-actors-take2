@@ -3,7 +3,7 @@ Dapr enabled Microsoft Orleans services co-hosted with grpc service in same gene
 
 WebApi service layer doesn't use orleans client to reach orleans silo, since it can call orleans silo directly since they are hosted in same generic host.
 
-Publisher and consumer services communicate over Dapr event publishing utilizing outbox pattern over Postgresql databese and Logical Replication. Postgres replication messages are processed by a grain service in same Orleans silo as publisher and events are written to RabbitMq by Dapr.
+Publisher and consumer services communicate over Dapr event publishing utilizing outbox pattern over Postgresql database and Logical Replication. Postgresql replication messages are processed by a grain service in same Orleans silo as publisher, these messages are written to RabbitMq over Dapr pub/sub.
 
 ## Microsoft Orleans:
 [Dapr has actor support](https://docs.dapr.io/concepts/faq/#what-is-the-relationship-between-dapr-orleans-and-service-fabric-reliable-actors) based on [Microsoft Orleans](https://dotnet.github.io/orleans/). 
