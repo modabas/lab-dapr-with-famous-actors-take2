@@ -19,7 +19,7 @@ Whenever data is written to a table in Postgres db, an event can be written to a
 ## Distributed tracing support:
 Asp.Net Core, Postgresql and Dapr has distributed tracing support out of the box. Also Microsoft Orleans supports it starting from 7.0. 
 
-This project uses OpenTelemetry tracing and exports them to Zipkin since Zipkin is already setup in development environment by Dapr initialization process.[OpenTelemetry documents](https://opentelemetry.io/docs/instrumentation/net/getting-started/) provide an excellent starting point on how to add OpenTelemetry supoort to a .Net project.
+This project uses OpenTelemetry tracing and exports them to Zipkin since Zipkin is already setup in development environment by Dapr initialization process. [OpenTelemetry documents](https://opentelemetry.io/docs/instrumentation/net/getting-started/) provide an excellent starting point on how to add OpenTelemetry supoort to a .Net project.
 
 ## Setup
 1. Start up a Postgresql instance with logical replication enabled. Such a docker container can be started with following command:
@@ -35,7 +35,7 @@ docker run -dt --restart unless-stopped -d -p 5432:5432 --name=postgres15.1 -e P
 ```powershell
 docker run -dt --restart unless-stopped -d -p 5672:5672 -p 15672:15672 --hostname my-rabbit --name rabbitmq3 rabbitmq:3-management
 ```
-Rabbitmq user/password used by Dapr is configured "host" parameter value in dapr pubsub.yaml configuration file. A user/password pair with these values can be created via RabbitMq management.
+Rabbitmq user/password used by Dapr is configured in "host" parameter value in dapr pubsub.yaml configuration file. A user/password pair with these values can be created via RabbitMq management.
 
 ## More References
 1. [Postgres Logical Replication](https://www.npgsql.org/doc/replication.html)
