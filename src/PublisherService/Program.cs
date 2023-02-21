@@ -1,6 +1,5 @@
 using Dapr.Client;
 using Npgsql;
-using OpenTelemetry;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Orleans.Configuration;
@@ -86,7 +85,7 @@ public class Program
                 .AddHttpClientInstrumentation()
                 .AddAspNetCoreInstrumentation()
                 .AddNpgsql();
-        }).StartWithHost();
+        });
 
         var app = builder.Build();
 

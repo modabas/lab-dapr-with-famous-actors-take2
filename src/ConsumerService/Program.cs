@@ -64,7 +64,7 @@ public class Program
                 .AddHttpClientInstrumentation()
                 .AddAspNetCoreInstrumentation()
                 .AddNpgsql();
-        }).StartWithHost();
+        });
 
         var app = builder.Build();
 

@@ -84,20 +84,17 @@ public class OutboxProcessor : IOutboxProcessor
                     topicName = await column.Get<string>(cancellationToken);
                     break;
 
-                case 5:
-                    messageType = await column.Get<string>(cancellationToken);
-                    break;
-
                 case 6:
-                    var messageSystemType = Type.GetType(messageType);
-                    if (messageSystemType is null)
-                        throw new ArgumentOutOfRangeException(nameof(messageSystemType));
-                    return new ReplicationMessage()
+                    using (var ms = new MemoryStream())
                     {
-                        Message = await JsonHelper.DeserializeJsonAsync(column.GetStream(), messageSystemType, cancellationToken),
-                        PubSubName = pubSubName,
-                        TopicName = topicName
-                    };
+                        await column.GetStream().CopyToAsync(ms, cancellationToken);
+                        return new ReplicationMessage()
+                        {
+                            Message = new ReadOnlyMemory<byte>(ms.ToArray()),
+                            PubSubName = pubSubName,
+                            TopicName = topicName
+                        };
+                    }
 
                 default:
                     break;
@@ -126,7 +123,10 @@ public class OutboxProcessor : IOutboxProcessor
                     if (message is InsertMessage insertMessage)
                     {
                         var outboxMessage = await GetMessage(insertMessage, cancellationToken);
-                        await _daprClient.PublishEventAsync(outboxMessage.PubSubName, outboxMessage.TopicName, outboxMessage.Message, cancellationToken);
+                        if (outboxMessage.Message is not null)
+                        {
+                            await _daprClient.PublishByteEventAsync(outboxMessage.PubSubName, outboxMessage.TopicName, outboxMessage.Message.Value, cancellationToken: cancellationToken);
+                        }
                     }
 
                     // Always call SetReplicationStatus() or assign LastAppliedLsn and LastFlushedLsn individually
@@ -156,6 +156,6 @@ public class OutboxProcessor : IOutboxProcessor
     {
         public string PubSubName { get; set; } = string.Empty;
         public string TopicName { get; set; } = string.Empty;
-        public object? Message { get; set; }
+        public ReadOnlyMemory<byte>? Message { get; set; }
     }
 }
