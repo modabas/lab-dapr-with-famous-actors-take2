@@ -1,5 +1,7 @@
 using Dapr.Client;
 using Npgsql;
+using OpenTelemetry.Exporter;
+using OpenTelemetry.Logs;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Orleans.Configuration;
@@ -70,10 +72,14 @@ public class Program
         var serviceName = "mod-daprwithfamousactors-take2-publisher";
         var serviceVersion = typeof(Program).Assembly.GetName().Version?.ToString() ?? "?";
 
+        var otelAttributes = new Dictionary<string, object>
+        {
+            { "deployment.environment", builder.Environment.EnvironmentName }
+        };
+
         builder.Services.AddOpenTelemetry().WithTracing(tracerProviderBuilder =>
         {
             tracerProviderBuilder
-                .AddZipkinExporter()
                 .AddSource(serviceName)
 
                 //orleans
@@ -81,10 +87,32 @@ public class Program
 
                 .SetResourceBuilder(
                     ResourceBuilder.CreateDefault()
-                        .AddService(serviceName: serviceName, serviceVersion: serviceVersion))
+                        .AddService(serviceName: serviceName, serviceVersion: serviceVersion)
+                        .AddAttributes(otelAttributes)
+                        .AddTelemetrySdk())
+
                 .AddHttpClientInstrumentation()
                 .AddAspNetCoreInstrumentation()
-                .AddNpgsql();
+                .AddNpgsql()
+                .AddOtlpExporter(otlpExporter =>
+                {
+                    otlpExporter.Protocol = OtlpExportProtocol.Grpc;
+                });
+        });
+
+        builder.Logging.AddOpenTelemetry(options =>
+        {
+            options.IncludeFormattedMessage = true;
+            options.IncludeScopes = true;
+            options.SetResourceBuilder(
+                    ResourceBuilder.CreateDefault()
+                        .AddService(serviceName: serviceName, serviceVersion: serviceVersion)
+                        .AddAttributes(otelAttributes)
+                        .AddTelemetrySdk());
+            options.AddOtlpExporter(otlpExporter =>
+            {
+                otlpExporter.Protocol = OtlpExportProtocol.Grpc;
+            });
         });
 
         var app = builder.Build();

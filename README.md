@@ -16,10 +16,12 @@ Whenever data is written to a table in Postgres db, an event can be written to a
 ## Debugging:
 [Dapr Sidekick for .Net](https://github.com/man-group/dapr-sidekick-dotnet) helps immensely to setting up a Dapr enabled .Net application project and also debugging experience.
 
-## Distributed tracing support:
+## Distributed tracing & logging support:
 Asp.Net Core, Postgresql and Dapr has distributed tracing support out of the box. Also Microsoft Orleans supports it starting from 7.0. 
 
-This project uses OpenTelemetry tracing and exports them to Zipkin since Zipkin is already setup in development environment by Dapr initialization process. [OpenTelemetry documents](https://opentelemetry.io/docs/instrumentation/net/getting-started/) provide an excellent starting point on how to add OpenTelemetry supoort to a .Net project.
+This project uses OpenTelemetry tracing/logging and exports them to Elasticsearch via an open telemetry collector. Docker compose file to spin up an Otel collector, Elasticsearch and Kibana instance on docker desktop for development environment is in [dockercompose-observability folder](https://github.com/modabas/lab-dapr-with-famous-actors-take2/tree/master/dockercompose-observability).
+
+[OpenTelemetry documents](https://opentelemetry.io/docs/instrumentation/net/getting-started/) provide an excellent starting point on how to add OpenTelemetry supoort to a .Net project.
 
 ## Setup
 1. Start up a Postgresql instance with logical replication enabled. Such a docker container can be started with following command:

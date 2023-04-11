@@ -1,0 +1,39 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:
+processors: 
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 100
+  batch:
+exporters:
+  logging:
+    loglevel: debug
+  elasticsearch/trace:
+    endpoints: [https://elasticsearch:9200]
+    user: elastic
+    password: elastic
+    api_key:
+    tls:
+      insecure_skip_verify: true
+  elasticsearch/log:
+    endpoints: [https://elasticsearch:9200]
+    user: elastic
+    password: elastic
+    api_key: 
+    tls:
+      insecure_skip_verify: true
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      exporters: [logging, elasticsearch/trace]
+      processors: [memory_limiter, batch]
+    logs: 
+      receivers: [otlp]
+      exporters: [elasticsearch/log]
+      processors: [memory_limiter, batch]
+
