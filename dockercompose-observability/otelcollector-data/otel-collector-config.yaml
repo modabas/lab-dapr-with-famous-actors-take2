@@ -30,7 +30,7 @@ service:
   pipelines:
     traces:
       receivers: [otlp]
-      exporters: [logging, elasticsearch/trace]
+      exporters: [elasticsearch/trace]
       processors: [memory_limiter, batch]
     logs: 
       receivers: [otlp]
