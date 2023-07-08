@@ -10,18 +10,49 @@ CREATE TABLE IF NOT EXISTS outbox_pattern.tbl_outbox
     created_date date NOT NULL DEFAULT (now())::date,
     message_type text COLLATE pg_catalog."default" NOT NULL,
     message_content jsonb NOT NULL,
-    CONSTRAINT tbl_outbox_pkey PRIMARY KEY (created_date, "position")
-) PARTITION BY RANGE (created_date);
+    outbox_no smallint NOT NULL,
+    CONSTRAINT tbl_outbox_pkey PRIMARY KEY (outbox_no, created_date, "position")
+) PARTITION BY RANGE (outbox_no);
 
 ALTER TABLE IF EXISTS outbox_pattern.tbl_outbox
     OWNER to postgres;
 
-CREATE PUBLICATION pub_outbox FOR TABLE outbox_pattern.tbl_outbox WITH (publish = 'insert');
+CREATE TABLE outbox_pattern.tbl_outbox_o0 PARTITION OF outbox_pattern.tbl_outbox
+    FOR VALUES FROM (0) TO (1) PARTITION BY RANGE (created_date);
+ALTER TABLE IF EXISTS outbox_pattern.tbl_outbox_o0
+    OWNER to postgres;
 
-SELECT * FROM pg_create_logical_replication_slot('repslot_outbox', 'pgoutput');
+CREATE TABLE outbox_pattern.tbl_outbox_o1 PARTITION OF outbox_pattern.tbl_outbox
+    FOR VALUES FROM (1) TO (2) PARTITION BY RANGE (created_date);
+ALTER TABLE IF EXISTS outbox_pattern.tbl_outbox_o1
+    OWNER to postgres;
 
+CREATE TABLE outbox_pattern.tbl_outbox_o2 PARTITION OF outbox_pattern.tbl_outbox
+    FOR VALUES FROM (2) TO (3) PARTITION BY RANGE (created_date);
+ALTER TABLE IF EXISTS outbox_pattern.tbl_outbox_o2
+    OWNER to postgres;
 
+CREATE TABLE outbox_pattern.tbl_outbox_o3 PARTITION OF outbox_pattern.tbl_outbox
+    FOR VALUES FROM (3) TO (4) PARTITION BY RANGE (created_date);
+ALTER TABLE IF EXISTS outbox_pattern.tbl_outbox_o3
+    OWNER to postgres;
 
+CREATE TABLE outbox_pattern.tbl_outbox_o4 PARTITION OF outbox_pattern.tbl_outbox
+    FOR VALUES FROM (4) TO (5) PARTITION BY RANGE (created_date);
+ALTER TABLE IF EXISTS outbox_pattern.tbl_outbox_o4
+    OWNER to postgres;
+
+CREATE PUBLICATION pub_outbox_0 FOR TABLE outbox_pattern.tbl_outbox_o0 WITH (publish = 'insert');
+CREATE PUBLICATION pub_outbox_1 FOR TABLE outbox_pattern.tbl_outbox_o1 WITH (publish = 'insert');
+CREATE PUBLICATION pub_outbox_2 FOR TABLE outbox_pattern.tbl_outbox_o2 WITH (publish = 'insert');
+CREATE PUBLICATION pub_outbox_3 FOR TABLE outbox_pattern.tbl_outbox_o3 WITH (publish = 'insert');
+CREATE PUBLICATION pub_outbox_4 FOR TABLE outbox_pattern.tbl_outbox_o4 WITH (publish = 'insert');
+
+SELECT * FROM pg_create_logical_replication_slot('repslot_outbox0', 'pgoutput');
+SELECT * FROM pg_create_logical_replication_slot('repslot_outbox1', 'pgoutput');
+SELECT * FROM pg_create_logical_replication_slot('repslot_outbox2', 'pgoutput');
+SELECT * FROM pg_create_logical_replication_slot('repslot_outbox3', 'pgoutput');
+SELECT * FROM pg_create_logical_replication_slot('repslot_outbox4', 'pgoutput');
 
 -- Table: public.tbl_greeting
 

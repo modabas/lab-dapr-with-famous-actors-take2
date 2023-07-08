@@ -10,4 +10,5 @@ public class OutboxEntity
     public DateTime CreatedDate { get; set; }
     public string MessageContent { get; set; } = string.Empty;
     public string MessageType { get; set; } = string.Empty;
+    public short OutboxNo { get; set; }
 }

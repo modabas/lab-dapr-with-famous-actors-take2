@@ -15,5 +15,6 @@ public class OutboxMap : EntityMap<OutboxEntity>
         Map(p => p.CreatedDate).ToColumn("created_date");
         Map(p => p.MessageContent).ToColumn("message_content");
         Map(p => p.MessageType).ToColumn("message_type");
+        Map(p => p.OutboxNo).ToColumn("outbox_no");
     }
 }

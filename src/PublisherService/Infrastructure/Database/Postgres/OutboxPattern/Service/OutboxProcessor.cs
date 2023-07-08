@@ -4,9 +4,10 @@ using PublisherService.Core.Database.OutboxPattern.Orleans;
 using Npgsql.Replication.PgOutput.Messages;
 using Microsoft.Extensions.Options;
 using PublisherService.Core.Database.Config;
-using Shared.Utility;
 using Dapr.Client;
 using Npgsql;
+using System.Diagnostics;
+using PublisherService.Infrastructure.Database.Postgres.OutboxPattern.Utility;
 
 namespace PublisherService.Infrastructure.Database.Postgres.OutboxPattern.Service;
 
@@ -16,14 +17,19 @@ public class OutboxProcessor : IOutboxProcessor
     private Task? _executingTask;
     private readonly ILogger<OutboxProcessor> _logger;
     private readonly IOptionsMonitor<ServiceDbOptions> _dbOptions;
+    private readonly IOptionsMonitor<OutboxPatternOptions> _outboxOptions;
     private readonly DaprClient _daprClient;
 
 
-    public OutboxProcessor(IOptionsMonitor<ServiceDbOptions> dbOptions, ILogger<OutboxProcessor> logger, DaprClient daprClient)
+    public OutboxProcessor(IOptionsMonitor<ServiceDbOptions> dbOptions,
+        ILogger<OutboxProcessor> logger,
+        DaprClient daprClient,
+        IOptionsMonitor<OutboxPatternOptions> outboxOptions)
     {
         _dbOptions = dbOptions;
         _logger = logger;
         _daprClient = daprClient;
+        _outboxOptions = outboxOptions;
     }
 
     public async Task Stop()
@@ -60,10 +66,16 @@ public class OutboxProcessor : IOutboxProcessor
 
     private async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        await Task.Run(() =>
+        var outboxCount = OutboxPatternHelper.GetOutboxCount(_outboxOptions.CurrentValue);
+        var tasks = new List<Task>();
+        for (var outboxNo = 0; outboxNo < outboxCount; outboxNo++)
         {
-            return ProcessOutbox(cancellationToken);
-        }, cancellationToken);
+            tasks.Add(Task.Run(() =>
+            {
+                return ProcessOutbox(outboxNo, cancellationToken);
+            }, cancellationToken));
+        }
+        await Task.WhenAll(tasks);
     }
 
     private async Task<ReplicationMessage> GetMessage(InsertMessage message, CancellationToken cancellationToken)
@@ -102,10 +114,10 @@ public class OutboxProcessor : IOutboxProcessor
             }
             colNo++;
         }
-        throw new InvalidOperationException("This code should be unreachable!");
+        throw new UnreachableException("This code should be unreachable!");
     }
 
-    private async Task ProcessOutbox(CancellationToken cancellationToken)
+    private async Task ProcessOutbox(int outboxNo, CancellationToken cancellationToken)
     {
         while (!cancellationToken.IsCancellationRequested)
         {
@@ -114,11 +126,11 @@ public class OutboxProcessor : IOutboxProcessor
                 await using var conn = new LogicalReplicationConnection(_dbOptions.CurrentValue.ConnectionString);
                 await conn.Open();
 
-                var slot = new PgOutputReplicationSlot("repslot_outbox");
+                var slot = new PgOutputReplicationSlot($"repslot_outbox{outboxNo:0}");
 
                 // The following will loop until the cancellation token is triggered, and will process messages coming from PostgreSQL:
                 await foreach (var message in conn.StartReplication(
-                    slot, new PgOutputReplicationOptions("pub_outbox", 1), cancellationToken))
+                    slot, new PgOutputReplicationOptions($"pub_outbox_{outboxNo:0}", 1), cancellationToken))
                 {
                     if (message is InsertMessage insertMessage)
                     {

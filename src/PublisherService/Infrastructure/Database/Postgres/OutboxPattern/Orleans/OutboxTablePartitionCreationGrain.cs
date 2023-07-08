@@ -2,6 +2,7 @@
 using Orleans.Runtime;
 using PublisherService.Core.Database.OutboxPattern.Orleans;
 using PublisherService.Core.Database.Service;
+using PublisherService.Infrastructure.Database.Postgres.OutboxPattern.Utility;
 
 namespace PublisherService.Infrastructure.Database.Postgres.OutboxPattern.Orleans;
 
@@ -67,15 +68,15 @@ internal class OutboxTablePartitionCreationGrain : Grain, IOutboxTablePartitionC
         }
     }
 
-    private string GetCreatePartitionCommandForOutboxTable(DateTime date)
+    private string GetCreatePartitionCommandForOutboxTable(int outboxNo, DateTime date)
     {
-        //if not exists, create month long partitions on date from first day of current month to first day of next month
-        var partitionTableName = $"tbl_outbox_y{date.Year.ToString("0000")}_m{date.Month.ToString("00")}_d{date.Day.ToString("00")}";
+        //if not exists, create daily partitions 
+        var partitionTableName = $"tbl_outbox_o{outboxNo:0}_y{date.Year:0000}_m{date.Month:00}_d{date.Day:00}";
         var commandText =
                     "DO $$ " +
                     "BEGIN " +
                     $"IF NOT EXISTS(SELECT 1 FROM pg_tables WHERE schemaname = N'outbox_pattern' AND tablename = N'{partitionTableName}') THEN " +
-                        $"CREATE TABLE outbox_pattern.{partitionTableName} PARTITION OF outbox_pattern.tbl_outbox " +
+                        $"CREATE TABLE outbox_pattern.{partitionTableName} PARTITION OF outbox_pattern.tbl_outbox_o{outboxNo:0} " +
                         $"FOR VALUES FROM ('{date.ToString("yyyy'-'MM'-'dd")}') TO ('{date.AddDays(1).ToString("yyyy'-'MM'-'dd")}') " +
                         "TABLESPACE pg_default; " +
                     "END IF; " +
@@ -84,11 +85,11 @@ internal class OutboxTablePartitionCreationGrain : Grain, IOutboxTablePartitionC
         return commandText;
     }
 
-    private async Task<int> CreatePartitionForOutboxTable(DateTime date)
+    private async Task<int> CreatePartitionForOutboxTable(int outboxNo, DateTime date)
     {
         using (var conn = _dbContext.GetConnection())
         {
-            var sql = GetCreatePartitionCommandForOutboxTable(date);
+            var sql = GetCreatePartitionCommandForOutboxTable(outboxNo, date);
             return await conn.ExecuteAsync(new CommandDefinition(sql));
         }
     }
@@ -99,7 +100,11 @@ internal class OutboxTablePartitionCreationGrain : Grain, IOutboxTablePartitionC
         {
             var todayUtc = DateTime.UtcNow.Date;
             //create partition for this month and next month (to be safe if app server time and db server time are skewed)
-            await Task.WhenAll(CreatePartitionForOutboxTable(todayUtc), CreatePartitionForOutboxTable(todayUtc.AddDays(1)));
+            //for each outbox
+            for (var outboxNo = 0; outboxNo < OutboxPatternHelper.MaxOutboxCount; outboxNo++)
+            {
+                await Task.WhenAll(CreatePartitionForOutboxTable(outboxNo, todayUtc), CreatePartitionForOutboxTable(outboxNo, todayUtc.AddDays(1)));
+            }
         }
         catch (Exception ex)
         {

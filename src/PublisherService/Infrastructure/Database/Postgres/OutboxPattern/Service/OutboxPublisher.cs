@@ -1,8 +1,10 @@
 ﻿using Dapper;
+using Microsoft.Extensions.Options;
 using PublisherService.Core.Database.OutboxPattern.Entity;
 using PublisherService.Core.Database.OutboxPattern.Service;
 using PublisherService.Core.Database.Service;
 using PublisherService.Infrastructure.Database.Postgres.Dapper.QueryParameter;
+using PublisherService.Infrastructure.Database.Postgres.OutboxPattern.Utility;
 using Shared.OutboxPattern;
 using Shared.Utility;
 using System.Data.Common;
@@ -13,11 +15,15 @@ public class OutboxPublisher : IOutboxPublisher
 {
     private readonly IDbContext _dbContext;
     private readonly ILogger<OutboxPublisher> _logger;
+    private readonly IOptionsMonitor<OutboxPatternOptions> _outboxOptions;
 
-    public OutboxPublisher(ILogger<OutboxPublisher> logger, IDbContext dbContext)
+    public OutboxPublisher(ILogger<OutboxPublisher> logger, 
+        IDbContext dbContext, 
+        IOptionsMonitor<OutboxPatternOptions> outboxOptions)
     {
         _logger = logger;
         _dbContext = dbContext;
+        _outboxOptions = outboxOptions;
     }
 
     private static readonly AsyncLocal<DbTransactionHolder> _dbTransactionCurrent = new AsyncLocal<DbTransactionHolder>();
@@ -60,9 +66,24 @@ public class OutboxPublisher : IOutboxPublisher
 
     public async Task<OutboxPrimaryKey> CreateMessage<TMessage>(string pubSubName, string topicName, OutboxMessage<TMessage> message, CancellationToken cancellationToken)
     {
+        var outboxNo = OutboxPatternHelper.RandomOutboxNo(_outboxOptions.CurrentValue);
+        return await CreateMessage(pubSubName, topicName, outboxNo, message, cancellationToken);
+    }
+
+    public async Task<OutboxPrimaryKey> CreateMessage<TMessage>(string pubSubName, string topicName, Guid correlationId, OutboxMessage<TMessage> message, CancellationToken cancellationToken)
+    {
+        var outboxNo = OutboxPatternHelper.DetermineOutboxNo(correlationId, _outboxOptions.CurrentValue);
+        return await CreateMessage(pubSubName, topicName, outboxNo, message, cancellationToken);
+    }
+
+    private async Task<OutboxPrimaryKey> CreateMessage<TMessage>(string pubSubName, string topicName, short outboxNo, OutboxMessage<TMessage> message, CancellationToken cancellationToken)
+    {
         var messageJsonString = JsonHelper.SerializeJson(message);
         var messageType = message.GetType().AssemblyQualifiedName;
-        var sql = "INSERT INTO outbox_pattern.tbl_outbox (pubsub_name, topic_name, message_content, message_type) VALUES (@pubsub_name, @topic_name, @message_content, @message_type) RETURNING created_date, position;";
+        var sql = 
+            @"INSERT INTO outbox_pattern.tbl_outbox (pubsub_name, topic_name, message_content, message_type, outbox_no) 
+             VALUES (@pubsub_name, @topic_name, @message_content, @message_type, @outbox_no) 
+             RETURNING created_date, position;";
 
         if (UseTransaction())
         {
@@ -91,13 +112,15 @@ public class OutboxPublisher : IOutboxPublisher
                     pubsub_name = pubSubName,
                     topic_name = topicName,
                     message_content = new JsonbParameter(messageJsonString),
-                    message_type = messageType
+                    message_type = messageType,
+                    outbox_no = outboxNo,
                 }, transaction: tran, cancellationToken: cancellationToken),
                 (createdDate, position) =>
                 {
-                    return new() { CreatedDate = createdDate, Position = position };
+                    return new() { OutboxNo = outboxNo, CreatedDate = createdDate, Position = position };
                 },
                 splitOn: "position")).Single();
         }
     }
+
 }
