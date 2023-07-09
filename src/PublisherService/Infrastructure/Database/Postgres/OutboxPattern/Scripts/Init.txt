@@ -42,11 +42,11 @@ CREATE TABLE outbox_pattern.tbl_outbox_o4 PARTITION OF outbox_pattern.tbl_outbox
 ALTER TABLE IF EXISTS outbox_pattern.tbl_outbox_o4
     OWNER to postgres;
 
-CREATE PUBLICATION pub_outbox_0 FOR TABLE outbox_pattern.tbl_outbox_o0 WITH (publish = 'insert');
-CREATE PUBLICATION pub_outbox_1 FOR TABLE outbox_pattern.tbl_outbox_o1 WITH (publish = 'insert');
-CREATE PUBLICATION pub_outbox_2 FOR TABLE outbox_pattern.tbl_outbox_o2 WITH (publish = 'insert');
-CREATE PUBLICATION pub_outbox_3 FOR TABLE outbox_pattern.tbl_outbox_o3 WITH (publish = 'insert');
-CREATE PUBLICATION pub_outbox_4 FOR TABLE outbox_pattern.tbl_outbox_o4 WITH (publish = 'insert');
+CREATE PUBLICATION pub_outbox0 FOR TABLE outbox_pattern.tbl_outbox_o0 WITH (publish = 'insert');
+CREATE PUBLICATION pub_outbox1 FOR TABLE outbox_pattern.tbl_outbox_o1 WITH (publish = 'insert');
+CREATE PUBLICATION pub_outbox2 FOR TABLE outbox_pattern.tbl_outbox_o2 WITH (publish = 'insert');
+CREATE PUBLICATION pub_outbox3 FOR TABLE outbox_pattern.tbl_outbox_o3 WITH (publish = 'insert');
+CREATE PUBLICATION pub_outbox4 FOR TABLE outbox_pattern.tbl_outbox_o4 WITH (publish = 'insert');
 
 SELECT * FROM pg_create_logical_replication_slot('repslot_outbox0', 'pgoutput');
 SELECT * FROM pg_create_logical_replication_slot('repslot_outbox1', 'pgoutput');

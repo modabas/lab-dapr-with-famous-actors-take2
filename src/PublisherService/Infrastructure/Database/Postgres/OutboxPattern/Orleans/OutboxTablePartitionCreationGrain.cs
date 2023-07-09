@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using Microsoft.Extensions.Options;
 using Orleans.Runtime;
 using PublisherService.Core.Database.OutboxPattern.Orleans;
 using PublisherService.Core.Database.Service;
@@ -13,11 +14,15 @@ internal class OutboxTablePartitionCreationGrain : Grain, IOutboxTablePartitionC
 
     private readonly ILogger<OutboxTablePartitionCreationGrain> _logger;
     private readonly IDbContext _dbContext;
+    private readonly IOptions<OutboxPatternOptions> _outboxOptions;
 
-    public OutboxTablePartitionCreationGrain(ILogger<OutboxTablePartitionCreationGrain> logger, IDbContext dbContext)
+    public OutboxTablePartitionCreationGrain(ILogger<OutboxTablePartitionCreationGrain> logger, 
+        IDbContext dbContext, 
+        IOptions<OutboxPatternOptions> outboxOptions)
     {
         _logger = logger;
         _dbContext = dbContext;
+        _outboxOptions = outboxOptions;
     }
 
     public Task<bool> IsBusy()
@@ -70,13 +75,14 @@ internal class OutboxTablePartitionCreationGrain : Grain, IOutboxTablePartitionC
 
     private string GetCreatePartitionCommandForOutboxTable(int outboxNo, DateTime date)
     {
+        var schemaName = OutboxPatternHelper.GetSchemaName(_outboxOptions.Value);
         //if not exists, create daily partitions 
         var partitionTableName = $"tbl_outbox_o{outboxNo:0}_y{date.Year:0000}_m{date.Month:00}_d{date.Day:00}";
         var commandText =
                     "DO $$ " +
                     "BEGIN " +
-                    $"IF NOT EXISTS(SELECT 1 FROM pg_tables WHERE schemaname = N'outbox_pattern' AND tablename = N'{partitionTableName}') THEN " +
-                        $"CREATE TABLE outbox_pattern.{partitionTableName} PARTITION OF outbox_pattern.tbl_outbox_o{outboxNo:0} " +
+                    $"IF NOT EXISTS(SELECT 1 FROM pg_tables WHERE schemaname = N'{schemaName}' AND tablename = N'{partitionTableName}') THEN " +
+                        $"CREATE TABLE {schemaName}.{partitionTableName} PARTITION OF {schemaName}.tbl_outbox_o{outboxNo:0} " +
                         $"FOR VALUES FROM ('{date.ToString("yyyy'-'MM'-'dd")}') TO ('{date.AddDays(1).ToString("yyyy'-'MM'-'dd")}') " +
                         "TABLESPACE pg_default; " +
                     "END IF; " +

@@ -13,6 +13,7 @@ using PublisherService.Core.GreetService.Service;
 using PublisherService.Infrastructure.Database.Postgres.Dapper.Service;
 using PublisherService.Infrastructure.Database.Postgres.OutboxPattern.Orleans;
 using PublisherService.Infrastructure.Database.Postgres.OutboxPattern.Service;
+using PublisherService.Infrastructure.Database.Postgres.OutboxPattern.Utility;
 using System.Net;
 
 namespace PublisherService;
@@ -29,9 +30,8 @@ public class Program
         }
 
         // Add services to the container.
-
-        //Db Services
         builder.Services.Configure<ServiceDbOptions>(builder.Configuration.GetSection("ServiceDbOptions"));
+        builder.Services.Configure<OutboxPatternOptions>(builder.Configuration.GetSection("OutboxPatternOptions"));
         builder.Services.AddSingleton<IDbContext, DbContext>();
         builder.Services.AddSingleton<IOutboxPublisher, OutboxPublisher>();
         builder.Services.AddSingleton<IGreetingRepo, GreetingRepo>();

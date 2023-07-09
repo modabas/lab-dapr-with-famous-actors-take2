@@ -17,14 +17,14 @@ public class OutboxProcessor : IOutboxProcessor
     private Task? _executingTask;
     private readonly ILogger<OutboxProcessor> _logger;
     private readonly IOptionsMonitor<ServiceDbOptions> _dbOptions;
-    private readonly IOptionsMonitor<OutboxPatternOptions> _outboxOptions;
+    private readonly IOptions<OutboxPatternOptions> _outboxOptions;
     private readonly DaprClient _daprClient;
 
 
     public OutboxProcessor(IOptionsMonitor<ServiceDbOptions> dbOptions,
         ILogger<OutboxProcessor> logger,
         DaprClient daprClient,
-        IOptionsMonitor<OutboxPatternOptions> outboxOptions)
+        IOptions<OutboxPatternOptions> outboxOptions)
     {
         _dbOptions = dbOptions;
         _logger = logger;
@@ -66,13 +66,15 @@ public class OutboxProcessor : IOutboxProcessor
 
     private async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        var outboxCount = OutboxPatternHelper.GetOutboxCount(_outboxOptions.CurrentValue);
+        var outboxCount = OutboxPatternHelper.GetOutboxCount(_outboxOptions.Value);
         var tasks = new List<Task>();
         for (var outboxNo = 0; outboxNo < outboxCount; outboxNo++)
         {
+            //for closure problem
+            var currentOutboxNo = outboxNo;
             tasks.Add(Task.Run(() =>
             {
-                return ProcessOutbox(outboxNo, cancellationToken);
+                return ProcessOutbox(currentOutboxNo, cancellationToken);
             }, cancellationToken));
         }
         await Task.WhenAll(tasks);
@@ -130,7 +132,7 @@ public class OutboxProcessor : IOutboxProcessor
 
                 // The following will loop until the cancellation token is triggered, and will process messages coming from PostgreSQL:
                 await foreach (var message in conn.StartReplication(
-                    slot, new PgOutputReplicationOptions($"pub_outbox_{outboxNo:0}", 1), cancellationToken))
+                    slot, new PgOutputReplicationOptions($"pub_outbox{outboxNo:0}", 1), cancellationToken))
                 {
                     if (message is InsertMessage insertMessage)
                     {

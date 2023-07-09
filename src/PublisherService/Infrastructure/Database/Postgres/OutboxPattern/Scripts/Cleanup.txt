@@ -1,0 +1,12 @@
+DROP PUBLICATION pub_outbox0; 
+DROP PUBLICATION pub_outbox1;
+DROP PUBLICATION pub_outbox2;
+DROP PUBLICATION pub_outbox3;
+DROP PUBLICATION pub_outbox4;
+
+
+select pg_drop_replication_slot('repslot_outbox0');
+select pg_drop_replication_slot('repslot_outbox1');
+select pg_drop_replication_slot('repslot_outbox2');
+select pg_drop_replication_slot('repslot_outbox3');
+select pg_drop_replication_slot('repslot_outbox4');

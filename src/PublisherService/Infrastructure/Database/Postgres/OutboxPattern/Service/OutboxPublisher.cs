@@ -15,11 +15,11 @@ public class OutboxPublisher : IOutboxPublisher
 {
     private readonly IDbContext _dbContext;
     private readonly ILogger<OutboxPublisher> _logger;
-    private readonly IOptionsMonitor<OutboxPatternOptions> _outboxOptions;
+    private readonly IOptions<OutboxPatternOptions> _outboxOptions;
 
     public OutboxPublisher(ILogger<OutboxPublisher> logger, 
-        IDbContext dbContext, 
-        IOptionsMonitor<OutboxPatternOptions> outboxOptions)
+        IDbContext dbContext,
+        IOptions<OutboxPatternOptions> outboxOptions)
     {
         _logger = logger;
         _dbContext = dbContext;
@@ -66,13 +66,13 @@ public class OutboxPublisher : IOutboxPublisher
 
     public async Task<OutboxPrimaryKey> CreateMessage<TMessage>(string pubSubName, string topicName, OutboxMessage<TMessage> message, CancellationToken cancellationToken)
     {
-        var outboxNo = OutboxPatternHelper.RandomOutboxNo(_outboxOptions.CurrentValue);
+        var outboxNo = OutboxPatternHelper.RandomOutboxNo(_outboxOptions.Value);
         return await CreateMessage(pubSubName, topicName, outboxNo, message, cancellationToken);
     }
 
     public async Task<OutboxPrimaryKey> CreateMessage<TMessage>(string pubSubName, string topicName, Guid correlationId, OutboxMessage<TMessage> message, CancellationToken cancellationToken)
     {
-        var outboxNo = OutboxPatternHelper.DetermineOutboxNo(correlationId, _outboxOptions.CurrentValue);
+        var outboxNo = OutboxPatternHelper.DetermineOutboxNo(correlationId, _outboxOptions.Value);
         return await CreateMessage(pubSubName, topicName, outboxNo, message, cancellationToken);
     }
 
@@ -80,8 +80,9 @@ public class OutboxPublisher : IOutboxPublisher
     {
         var messageJsonString = JsonHelper.SerializeJson(message);
         var messageType = message.GetType().AssemblyQualifiedName;
+        var schemaName = OutboxPatternHelper.GetSchemaName(_outboxOptions.Value);
         var sql = 
-            @"INSERT INTO outbox_pattern.tbl_outbox (pubsub_name, topic_name, message_content, message_type, outbox_no) 
+            @$"INSERT INTO {schemaName}.tbl_outbox (pubsub_name, topic_name, message_content, message_type, outbox_no) 
              VALUES (@pubsub_name, @topic_name, @message_content, @message_type, @outbox_no) 
              RETURNING created_date, position;";
 
