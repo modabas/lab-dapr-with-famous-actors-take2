@@ -2,7 +2,7 @@
 using System.Data;
 using System.Data.Common;
 
-namespace PublisherService.Core.Database.OutboxPattern.Extensions;
+namespace PublisherService.Infrastructure.Database.Postgres.OutboxPattern.Extensions;
 
 public static class DbConnectionExtensions
 {

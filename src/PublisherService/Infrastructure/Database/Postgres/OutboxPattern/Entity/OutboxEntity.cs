@@ -1,4 +1,4 @@
-﻿namespace PublisherService.Core.Database.OutboxPattern.Entity;
+﻿namespace PublisherService.Infrastructure.Database.Postgres.OutboxPattern.Entity;
 
 public class OutboxEntity
 {

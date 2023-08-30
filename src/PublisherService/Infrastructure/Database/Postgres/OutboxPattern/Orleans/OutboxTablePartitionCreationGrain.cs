@@ -7,7 +7,7 @@ using PublisherService.Infrastructure.Database.Postgres.OutboxPattern.Utility;
 
 namespace PublisherService.Infrastructure.Database.Postgres.OutboxPattern.Orleans;
 
-internal class OutboxTablePartitionCreationGrain : Grain, IOutboxTablePartitionCreationGrain, IRemindable
+public class OutboxTablePartitionCreationGrain : Grain, IOutboxTablePartitionCreationGrain, IRemindable
 {
     private bool _isBusy = false;
     private const string ReminderName = "DbPartitionCreationGrain_Outbox_Postgres";

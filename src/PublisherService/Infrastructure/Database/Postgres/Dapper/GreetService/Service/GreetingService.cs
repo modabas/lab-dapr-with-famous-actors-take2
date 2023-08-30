@@ -1,26 +1,28 @@
 ﻿using Dapper;
-using PublisherService.Core.Database.OutboxPattern.Extensions;
 using PublisherService.Core.Database.OutboxPattern.Service;
 using PublisherService.Core.Database.Service;
-using PublisherService.Core.GreetService.Entity;
+using PublisherService.Core.GreetService.Dto;
 using PublisherService.Core.GreetService.Service;
+using PublisherService.Infrastructure.Database.Postgres.Dapper.GreetService.Entity;
+using PublisherService.Infrastructure.Database.Postgres.Dapper.GreetService.Extensions;
+using PublisherService.Infrastructure.Database.Postgres.OutboxPattern.Extensions;
 using Shared.GreetService.Events;
 using Shared.OutboxPattern;
 
-namespace PublisherService.Infrastructure.Database.Postgres.Dapper.Service;
+namespace PublisherService.Infrastructure.Database.Postgres.Dapper.GreetService.Service;
 
-public class GreetingRepo : IGreetingRepo
+public class GreetingService : IGreetingService
 {
     private readonly IDbContext _dbContext;
     private readonly IOutboxPublisher _outboxPublisher;
 
-    public GreetingRepo(IDbContext dbContext, IOutboxPublisher outboxPublisher)
+    public GreetingService(IDbContext dbContext, IOutboxPublisher outboxPublisher)
     {
         _dbContext = dbContext;
         _outboxPublisher = outboxPublisher;
     }
 
-    public async Task<GreetingEntity> CreateGreetingAndEvent(string from, string to, string message, CancellationToken cancellationToken)
+    public async Task<GreetingDto> CreateGreetingAndEvent(string from, string to, string message, CancellationToken cancellationToken)
     {
         using (var conn = _dbContext.GetConnection())
         {
@@ -29,7 +31,7 @@ public class GreetingRepo : IGreetingRepo
             using (var tran = conn.BeginTransaction(_outboxPublisher))
             {
                 var sql = "INSERT INTO tbl_greeting (\"from\", \"to\", message) VALUES (@from, @to, @message) RETURNING *;";
-                var entity = await conn.QuerySingleOrDefaultAsync<GreetingEntity>(new CommandDefinition(sql, new { from, to , message }, tran, cancellationToken: cancellationToken));
+                var entity = await conn.QuerySingleOrDefaultAsync<GreetingEntity>(new CommandDefinition(sql, new { from, to, message }, tran, cancellationToken: cancellationToken));
                 cancellationToken.ThrowIfCancellationRequested();
 
                 if (entity is null)
@@ -40,7 +42,7 @@ public class GreetingRepo : IGreetingRepo
                 cancellationToken.ThrowIfCancellationRequested();
 
                 await tran.CommitAsync(cancellationToken);
-                return entity;
+                return entity.ToDto();
             }
         }
     }

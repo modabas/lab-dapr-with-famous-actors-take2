@@ -10,6 +10,7 @@ using PublisherService.Core.Database.OutboxPattern.Orleans;
 using PublisherService.Core.Database.OutboxPattern.Service;
 using PublisherService.Core.Database.Service;
 using PublisherService.Core.GreetService.Service;
+using PublisherService.Infrastructure.Database.Postgres.Dapper.GreetService.Service;
 using PublisherService.Infrastructure.Database.Postgres.Dapper.Service;
 using PublisherService.Infrastructure.Database.Postgres.OutboxPattern.Orleans;
 using PublisherService.Infrastructure.Database.Postgres.OutboxPattern.Service;
@@ -32,9 +33,16 @@ public class Program
         // Add services to the container.
         builder.Services.Configure<ServiceDbOptions>(builder.Configuration.GetSection("ServiceDbOptions"));
         builder.Services.Configure<OutboxPatternOptions>(builder.Configuration.GetSection("OutboxPatternOptions"));
-        builder.Services.AddSingleton<IDbContext, DbContext>();
         builder.Services.AddSingleton<IOutboxPublisher, OutboxPublisher>();
-        builder.Services.AddSingleton<IGreetingRepo, GreetingRepo>();
+
+        //Greet service Dapper implementation
+        //builder.Services.AddSingleton<IDbContext, ApplicationDbContext>();
+        //builder.Services.AddSingleton<IGreetingService, GreetingService>();
+
+        //Greet service Entity fw implementation
+        builder.Services.AddSingleton<IDbContext, DbContext>();
+        builder.Services.AddDbContext<PublisherService.Infrastructure.Database.Postgres.EntityFw.Context.ApplicationDbContext>();
+        builder.Services.AddScoped<IGreetingService, PublisherService.Infrastructure.Database.Postgres.EntityFw.GreetService.Service.GreetingService>();
 
 
         builder.Services.AddSingleton<DaprClient>(new DaprClientBuilder().Build());
