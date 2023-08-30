@@ -1,15 +1,14 @@
-﻿using Dapper;
-using Dapper.FluentMap;
+﻿using Dapper.FluentMap;
 using Microsoft.Extensions.Options;
 using Npgsql;
 using PublisherService.Core.Database.Config;
 using PublisherService.Core.Database.Service;
-using PublisherService.Infrastructure.Database.Postgres.Dapper.Mapper;
+using PublisherService.Infrastructure.Database.Postgres.OutboxPattern.Mapper;
 using System.Data.Common;
 
-namespace PublisherService.Infrastructure.Database.Postgres.Dapper.Service;
+namespace PublisherService.Infrastructure.Database.Postgres.OutboxPattern.Service;
 
-internal class DbContext : IDbContext
+public class DbContext : IDbContext
 {
     private readonly IOptionsMonitor<ServiceDbOptions> _dbOptions;
 
@@ -18,7 +17,6 @@ internal class DbContext : IDbContext
         _dbOptions = dbOptions;
         FluentMapper.Initialize(config =>
         {
-            config.AddMap(new GreetingMap());
             config.AddMap(new OutboxMap());
         });
     }

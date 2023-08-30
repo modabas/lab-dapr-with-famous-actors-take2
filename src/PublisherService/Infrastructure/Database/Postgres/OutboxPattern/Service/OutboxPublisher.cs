@@ -1,9 +1,9 @@
 ﻿using Dapper;
 using Microsoft.Extensions.Options;
-using PublisherService.Core.Database.OutboxPattern.Entity;
+using PublisherService.Core.Database.OutboxPattern.Dto;
 using PublisherService.Core.Database.OutboxPattern.Service;
 using PublisherService.Core.Database.Service;
-using PublisherService.Infrastructure.Database.Postgres.Dapper.QueryParameter;
+using PublisherService.Infrastructure.Database.Postgres.OutboxPattern.QueryParameter;
 using PublisherService.Infrastructure.Database.Postgres.OutboxPattern.Utility;
 using Shared.OutboxPattern;
 using Shared.Utility;
@@ -64,19 +64,19 @@ public class OutboxPublisher : IOutboxPublisher
         return true;
     }
 
-    public async Task<OutboxPrimaryKey> CreateMessage<TMessage>(string pubSubName, string topicName, OutboxMessage<TMessage> message, CancellationToken cancellationToken)
+    public async Task<OutboxMessageKey> CreateMessage<TMessage>(string pubSubName, string topicName, OutboxMessage<TMessage> message, CancellationToken cancellationToken)
     {
         var outboxNo = OutboxPatternHelper.RandomOutboxNo(_outboxOptions.Value);
         return await CreateMessage(pubSubName, topicName, outboxNo, message, cancellationToken);
     }
 
-    public async Task<OutboxPrimaryKey> CreateMessage<TMessage>(string pubSubName, string topicName, Guid correlationId, OutboxMessage<TMessage> message, CancellationToken cancellationToken)
+    public async Task<OutboxMessageKey> CreateMessage<TMessage>(string pubSubName, string topicName, Guid correlationId, OutboxMessage<TMessage> message, CancellationToken cancellationToken)
     {
         var outboxNo = OutboxPatternHelper.DetermineOutboxNo(correlationId, _outboxOptions.Value);
         return await CreateMessage(pubSubName, topicName, outboxNo, message, cancellationToken);
     }
 
-    private async Task<OutboxPrimaryKey> CreateMessage<TMessage>(string pubSubName, string topicName, short outboxNo, OutboxMessage<TMessage> message, CancellationToken cancellationToken)
+    private async Task<OutboxMessageKey> CreateMessage<TMessage>(string pubSubName, string topicName, short outboxNo, OutboxMessage<TMessage> message, CancellationToken cancellationToken)
     {
         var messageJsonString = JsonHelper.SerializeJson(message);
         var messageType = message.GetType().AssemblyQualifiedName;
@@ -105,9 +105,9 @@ public class OutboxPublisher : IOutboxPublisher
             }
         }
 
-        async Task<OutboxPrimaryKey> CreateMessageInternal(DbConnection? conn, DbTransaction? tran)
+        async Task<OutboxMessageKey> CreateMessageInternal(DbConnection? conn, DbTransaction? tran)
         {
-            return (await conn.QueryAsync<DateTime, long, OutboxPrimaryKey>(new CommandDefinition(sql,
+            return (await conn.QueryAsync<DateTime, long, OutboxMessageKey>(new CommandDefinition(sql,
                 new
                 {
                     pubsub_name = pubSubName,

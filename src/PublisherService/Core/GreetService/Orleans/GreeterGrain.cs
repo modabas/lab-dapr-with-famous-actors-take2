@@ -5,9 +5,9 @@ namespace PublisherService.Core.GreetService.Orleans;
 public class GreeterGrain : Grain, IGreeterGrain
 {
     private readonly ILogger<GreeterGrain> _logger;
-    private readonly IGreetingRepo _greetingRepo;
+    private readonly IGreetingService _greetingRepo;
 
-    public GreeterGrain(ILogger<GreeterGrain> logger, IGreetingRepo greetingRepo)
+    public GreeterGrain(ILogger<GreeterGrain> logger, IGreetingService greetingRepo)
     {
         _logger = logger;
         _greetingRepo = greetingRepo;

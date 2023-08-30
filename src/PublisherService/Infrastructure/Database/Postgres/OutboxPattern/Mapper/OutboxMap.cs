@@ -1,7 +1,7 @@
 ﻿using Dapper.FluentMap.Mapping;
-using PublisherService.Core.Database.OutboxPattern.Entity;
+using PublisherService.Infrastructure.Database.Postgres.OutboxPattern.Entity;
 
-namespace PublisherService.Infrastructure.Database.Postgres.Dapper.Mapper;
+namespace PublisherService.Infrastructure.Database.Postgres.OutboxPattern.Mapper;
 
 public class OutboxMap : EntityMap<OutboxEntity>
 {

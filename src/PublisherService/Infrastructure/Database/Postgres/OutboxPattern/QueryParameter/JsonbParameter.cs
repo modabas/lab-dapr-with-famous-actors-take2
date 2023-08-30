@@ -3,9 +3,9 @@ using NpgsqlTypes;
 using System.Data;
 using static Dapper.SqlMapper;
 
-namespace PublisherService.Infrastructure.Database.Postgres.Dapper.QueryParameter;
+namespace PublisherService.Infrastructure.Database.Postgres.OutboxPattern.QueryParameter;
 
-internal class JsonbParameter : ICustomQueryParameter
+public class JsonbParameter : ICustomQueryParameter
 {
     private readonly string _value;
 

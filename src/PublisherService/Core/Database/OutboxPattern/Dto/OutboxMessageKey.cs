@@ -1,6 +1,6 @@
-﻿namespace PublisherService.Core.Database.OutboxPattern.Entity;
+﻿namespace PublisherService.Core.Database.OutboxPattern.Dto;
 
-public class OutboxPrimaryKey
+public class OutboxMessageKey
 {
     public short OutboxNo { get; set; }
     public DateTime CreatedDate { get; set; }
