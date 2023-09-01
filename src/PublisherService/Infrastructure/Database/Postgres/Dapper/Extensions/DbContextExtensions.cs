@@ -1,10 +1,10 @@
-﻿using Dapper;
-using Dapper.FluentMap;
-using Dapper.FluentMap.Mapping;
+﻿using Dapper.FluentMap.Mapping;
 using Dapper.FluentMap.TypeMaps;
+using Dapper.FluentMap;
+using Dapper;
 using PublisherService.Infrastructure.Database.Postgres.OutboxPattern.Service;
 
-namespace PublisherService.Infrastructure.Database.Postgres.OutboxPattern.Extensions;
+namespace PublisherService.Infrastructure.Database.Postgres.Dapper.Extensions;
 
 public static class DbContextExtensions
 {

@@ -1,9 +1,9 @@
-﻿using Dapper;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
+using Npgsql;
+using NpgsqlTypes;
 using PublisherService.Core.Database.OutboxPattern.Dto;
 using PublisherService.Core.Database.OutboxPattern.Service;
 using PublisherService.Core.Database.Service;
-using PublisherService.Infrastructure.Database.Postgres.OutboxPattern.QueryParameter;
 using PublisherService.Infrastructure.Database.Postgres.OutboxPattern.Utility;
 using Shared.OutboxPattern;
 using Shared.Utility;
@@ -105,22 +105,34 @@ public class OutboxPublisher : IOutboxPublisher
             }
         }
 
-        async Task<OutboxMessageKey> CreateMessageInternal(DbConnection? conn, DbTransaction? tran)
+        async Task<OutboxMessageKey> CreateMessageInternal(DbConnection conn, DbTransaction? tran)
         {
-            return (await conn.QueryAsync<DateTime, long, OutboxMessageKey>(new CommandDefinition(sql,
-                new
+            var command = conn.CreateCommand();
+            command.Transaction = tran;
+            command.CommandText = sql;
+            command.Parameters.Add(new NpgsqlParameter("pubsub_name", NpgsqlDbType.Text) { Value = pubSubName });
+            command.Parameters.Add(new NpgsqlParameter("topic_name", NpgsqlDbType.Text) { Value = topicName });
+            command.Parameters.Add(new NpgsqlParameter("message_content", NpgsqlDbType.Jsonb) { Value = messageJsonString });
+            command.Parameters.Add(new NpgsqlParameter("message_type", NpgsqlDbType.Text) { Value = messageType });
+            command.Parameters.Add(new NpgsqlParameter("outbox_no", NpgsqlDbType.Smallint) { Value = outboxNo });
+            
+            using (var reader = await command.ExecuteReaderAsync(cancellationToken))
+            {
+                return MapOutput(reader).Single();
+            }
+
+            IEnumerable<OutboxMessageKey> MapOutput(DbDataReader reader)
+            {
+                while (reader.Read())
                 {
-                    pubsub_name = pubSubName,
-                    topic_name = topicName,
-                    message_content = new JsonbParameter(messageJsonString),
-                    message_type = messageType,
-                    outbox_no = outboxNo,
-                }, transaction: tran, cancellationToken: cancellationToken),
-                (createdDate, position) =>
-                {
-                    return new() { OutboxNo = outboxNo, CreatedDate = createdDate, Position = position };
-                },
-                splitOn: "position")).Single();
+                    yield return new()
+                    {
+                        OutboxNo = outboxNo,
+                        CreatedDate = Convert.ToDateTime(reader[0]),
+                        Position = Convert.ToInt64(reader[1])
+                    };
+                }
+            }
         }
     }
 
