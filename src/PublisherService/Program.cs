@@ -6,7 +6,6 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Orleans.Configuration;
 using PublisherService.Core.Database.Config;
-using PublisherService.Core.Database.OutboxPattern.Orleans;
 using PublisherService.Core.Database.OutboxPattern.Service;
 using PublisherService.Core.Database.Service;
 using PublisherService.Core.GreetService.Service;

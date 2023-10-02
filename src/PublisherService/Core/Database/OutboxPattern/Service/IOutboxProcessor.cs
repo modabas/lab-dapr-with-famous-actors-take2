@@ -1,4 +1,4 @@
-﻿namespace PublisherService.Core.Database.OutboxPattern.Orleans;
+﻿namespace PublisherService.Core.Database.OutboxPattern.Service;
 
 public interface IOutboxProcessor
 {

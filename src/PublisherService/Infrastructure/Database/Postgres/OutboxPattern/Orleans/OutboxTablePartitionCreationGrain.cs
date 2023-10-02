@@ -1,7 +1,6 @@
 ﻿using Dapper;
 using Microsoft.Extensions.Options;
 using Orleans.Runtime;
-using PublisherService.Core.Database.OutboxPattern.Orleans;
 using PublisherService.Core.Database.Service;
 using PublisherService.Infrastructure.Database.Postgres.OutboxPattern.Utility;
 
