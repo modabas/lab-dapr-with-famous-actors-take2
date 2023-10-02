@@ -1,4 +1,4 @@
-﻿namespace ConsumerService.Core.GreetProcessorService;
+﻿namespace ConsumerService.Infrastructure.GreetProcessorService.Orleans;
 
 public class GreetedGrain : Grain, IGreetedGrain
 {

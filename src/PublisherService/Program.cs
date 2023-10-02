@@ -6,15 +6,15 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Orleans.Configuration;
 using PublisherService.Core.Database.Config;
-using PublisherService.Core.Database.OutboxPattern.Orleans;
+using PublisherService.Core.Database.OutboxPattern.OutboxSelector;
 using PublisherService.Core.Database.OutboxPattern.Service;
+using PublisherService.Core.Database.OutboxPattern.Utility;
 using PublisherService.Core.Database.Service;
 using PublisherService.Core.GreetService.Service;
 using PublisherService.Infrastructure.Database.Postgres.Dapper.GreetService.Service;
 using PublisherService.Infrastructure.Database.Postgres.Dapper.Service;
 using PublisherService.Infrastructure.Database.Postgres.OutboxPattern.Orleans;
 using PublisherService.Infrastructure.Database.Postgres.OutboxPattern.Service;
-using PublisherService.Infrastructure.Database.Postgres.OutboxPattern.Utility;
 using System.Net;
 
 namespace PublisherService;
@@ -30,14 +30,15 @@ public class Program
             builder.Services.AddDaprSidekick(builder.Configuration);
         }
 
-        // Add services to the container.
+        // Add outbox services
         builder.Services.Configure<ServiceDbOptions>(builder.Configuration.GetSection("ServiceDbOptions"));
         builder.Services.Configure<OutboxPatternOptions>(builder.Configuration.GetSection("OutboxPatternOptions"));
         builder.Services.AddSingleton<IOutboxPublisher, OutboxPublisher>();
+        builder.Services.AddTransient<IOutboxSelector, RandomOutboxSelector>();
 
         //Greet service Dapper implementation
         //builder.Services.AddSingleton<IDbContext, ApplicationDbContext>();
-        //builder.Services.AddSingleton<IGreetingService, GreetingService>();
+        //builder.Services.AddScoped<IGreetingService, GreetingService>();
 
         //Greet service Entity fw implementation
         builder.Services.AddSingleton<IDbContext, DbContext>();

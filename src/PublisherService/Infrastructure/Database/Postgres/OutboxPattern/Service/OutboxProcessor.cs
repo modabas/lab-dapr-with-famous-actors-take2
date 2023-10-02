@@ -1,13 +1,13 @@
 ﻿using Npgsql.Replication.PgOutput;
 using Npgsql.Replication;
-using PublisherService.Core.Database.OutboxPattern.Orleans;
 using Npgsql.Replication.PgOutput.Messages;
 using Microsoft.Extensions.Options;
 using PublisherService.Core.Database.Config;
 using Dapr.Client;
 using Npgsql;
 using System.Diagnostics;
-using PublisherService.Infrastructure.Database.Postgres.OutboxPattern.Utility;
+using PublisherService.Core.Database.OutboxPattern.Service;
+using PublisherService.Core.Database.OutboxPattern.Utility;
 
 namespace PublisherService.Infrastructure.Database.Postgres.OutboxPattern.Service;
 

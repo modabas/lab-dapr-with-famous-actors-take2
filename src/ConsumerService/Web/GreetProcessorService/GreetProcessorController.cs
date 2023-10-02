@@ -1,4 +1,4 @@
-using ConsumerService.Core.GreetProcessorService;
+using ConsumerService.Infrastructure.GreetProcessorService.Orleans;
 using Dapr;
 using Microsoft.AspNetCore.Mvc;
 using Shared.GreetService.Events;

@@ -1,5 +1,4 @@
 ﻿using Orleans.Runtime;
-using PublisherService.Core.Database.OutboxPattern.Orleans;
 
 namespace PublisherService.Infrastructure.Database.Postgres.OutboxPattern.Orleans;
 

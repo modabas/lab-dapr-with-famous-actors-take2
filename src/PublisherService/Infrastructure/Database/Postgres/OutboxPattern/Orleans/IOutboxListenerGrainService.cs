@@ -1,6 +1,6 @@
 ﻿using Orleans.Services;
 
-namespace PublisherService.Core.Database.OutboxPattern.Orleans;
+namespace PublisherService.Infrastructure.Database.Postgres.OutboxPattern.Orleans;
 
 public interface IOutboxListenerGrainService : IGrainService
 {

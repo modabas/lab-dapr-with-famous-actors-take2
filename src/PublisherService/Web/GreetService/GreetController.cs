@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using PublisherService.Core.GreetService.Orleans;
+using PublisherService.Infrastructure.GreetService.Orleans;
 using Shared.Orleans;
 
 namespace PublisherService.Web.GreetService

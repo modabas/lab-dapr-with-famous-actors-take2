@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using PublisherService.Infrastructure.Database.Postgres.EntityFw.GreetService.Entity;
+using PublisherService.Core.GreetService.Entity;
+using PublisherService.Infrastructure.Database.Postgres.EntityFw.GreetService.Configuration;
 
 namespace PublisherService.Infrastructure.Database.Postgres.EntityFw.Context;
 

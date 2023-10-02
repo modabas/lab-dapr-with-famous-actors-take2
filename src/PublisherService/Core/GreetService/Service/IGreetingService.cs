@@ -1,8 +1,8 @@
-﻿using PublisherService.Core.GreetService.Dto;
+﻿using PublisherService.Core.GreetService.Entity;
 
 namespace PublisherService.Core.GreetService.Service;
 
 public interface IGreetingService
 {
-    Task<GreetingDto> CreateGreetingAndEvent(string from, string to, string message, CancellationToken cancellationToken);
+    Task<GreetingEntity> CreateGreetingAndEvent(string from, string to, string message, CancellationToken cancellationToken);
 }

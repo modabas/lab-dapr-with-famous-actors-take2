@@ -1,10 +1,8 @@
 ﻿using PublisherService.Core.Database.OutboxPattern.Service;
-using PublisherService.Core.GreetService.Dto;
+using PublisherService.Core.GreetService.Entity;
 using PublisherService.Core.GreetService.Service;
 using PublisherService.Infrastructure.Database.Postgres.EntityFw.Context;
 using PublisherService.Infrastructure.Database.Postgres.EntityFw.Extensions;
-using PublisherService.Infrastructure.Database.Postgres.EntityFw.GreetService.Entity;
-using PublisherService.Infrastructure.Database.Postgres.EntityFw.GreetService.Extensions;
 using Shared.GreetService.Events;
 using Shared.OutboxPattern;
 
@@ -21,7 +19,7 @@ public class GreetingService : IGreetingService
         _dbContext = dbContext;
     }
 
-    public async Task<GreetingDto> CreateGreetingAndEvent(string from, string to, string message, CancellationToken cancellationToken)
+    public async Task<GreetingEntity> CreateGreetingAndEvent(string from, string to, string message, CancellationToken cancellationToken)
     {
         using (var tran = _dbContext.Database.BeginTransaction(_outboxPublisher))
         {
@@ -36,7 +34,7 @@ public class GreetingService : IGreetingService
             await _outboxPublisher.CreateMessage("take2pubsub", "greetings", new OutboxMessage<GreetingReceived>(greetingEvent), cancellationToken);
             await _dbContext.SaveChangesAsync(cancellationToken);
             await tran.CommitAsync(cancellationToken);
-            return entity.ToDto();
+            return entity;
         }
     }
 }

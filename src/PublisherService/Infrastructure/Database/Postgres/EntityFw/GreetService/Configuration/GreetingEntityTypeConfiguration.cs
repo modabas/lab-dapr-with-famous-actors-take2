@@ -1,7 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
+using PublisherService.Core.GreetService.Entity;
 
-namespace PublisherService.Infrastructure.Database.Postgres.EntityFw.GreetService.Entity;
+namespace PublisherService.Infrastructure.Database.Postgres.EntityFw.GreetService.Configuration;
 
 public class GreetingEntityTypeConfiguration : IEntityTypeConfiguration<GreetingEntity>
 {

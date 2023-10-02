@@ -1,5 +1,5 @@
 ﻿using Dapper.FluentMap.Mapping;
-using PublisherService.Infrastructure.Database.Postgres.Dapper.GreetService.Entity;
+using PublisherService.Core.GreetService.Entity;
 
 namespace PublisherService.Infrastructure.Database.Postgres.Dapper.GreetService.Mapper;
 
