@@ -1,6 +1,6 @@
 ﻿using Orleans;
 
-namespace PublisherService.Core.GreetService.Orleans;
+namespace PublisherService.Infrastructure.GreetService.Orleans;
 
 public interface IGreeterGrain : IGrainWithStringKey
 {

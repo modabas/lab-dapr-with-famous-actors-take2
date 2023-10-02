@@ -1,6 +1,6 @@
-﻿namespace PublisherService.Core.GreetService.Dto;
+﻿namespace PublisherService.Core.GreetService.Entity;
 
-public class GreetingDto
+public class GreetingEntity
 {
     public long Id { get; set; }
     public string From { get; set; } = string.Empty;

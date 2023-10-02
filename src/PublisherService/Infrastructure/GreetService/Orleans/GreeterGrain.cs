@@ -1,6 +1,6 @@
 ﻿using PublisherService.Core.GreetService.Service;
 
-namespace PublisherService.Core.GreetService.Orleans;
+namespace PublisherService.Infrastructure.GreetService.Orleans;
 
 public class GreeterGrain : Grain, IGreeterGrain
 {
