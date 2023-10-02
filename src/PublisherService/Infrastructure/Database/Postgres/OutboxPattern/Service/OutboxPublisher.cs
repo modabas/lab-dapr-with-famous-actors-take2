@@ -2,9 +2,10 @@
 using Npgsql;
 using NpgsqlTypes;
 using PublisherService.Core.Database.OutboxPattern.Dto;
+using PublisherService.Core.Database.OutboxPattern.OutboxSelector;
 using PublisherService.Core.Database.OutboxPattern.Service;
+using PublisherService.Core.Database.OutboxPattern.Utility;
 using PublisherService.Core.Database.Service;
-using PublisherService.Infrastructure.Database.Postgres.OutboxPattern.Utility;
 using Shared.OutboxPattern;
 using Shared.Utility;
 using System.Data.Common;
@@ -16,14 +17,17 @@ public class OutboxPublisher : IOutboxPublisher
     private readonly IDbContext _dbContext;
     private readonly ILogger<OutboxPublisher> _logger;
     private readonly IOptions<OutboxPatternOptions> _outboxOptions;
+    private readonly IOutboxSelector _outboxSelector;
 
-    public OutboxPublisher(ILogger<OutboxPublisher> logger, 
+    public OutboxPublisher(ILogger<OutboxPublisher> logger,
         IDbContext dbContext,
-        IOptions<OutboxPatternOptions> outboxOptions)
+        IOptions<OutboxPatternOptions> outboxOptions,
+        IOutboxSelector outboxSelector)
     {
         _logger = logger;
         _dbContext = dbContext;
         _outboxOptions = outboxOptions;
+        _outboxSelector = outboxSelector;
     }
 
     private static readonly AsyncLocal<DbTransactionHolder> _dbTransactionCurrent = new AsyncLocal<DbTransactionHolder>();
@@ -66,13 +70,7 @@ public class OutboxPublisher : IOutboxPublisher
 
     public async Task<OutboxMessageKey> CreateMessage<TMessage>(string pubSubName, string topicName, OutboxMessage<TMessage> message, CancellationToken cancellationToken)
     {
-        var outboxNo = OutboxPatternHelper.RandomOutboxNo(_outboxOptions.Value);
-        return await CreateMessage(pubSubName, topicName, outboxNo, message, cancellationToken);
-    }
-
-    public async Task<OutboxMessageKey> CreateMessage<TMessage>(string pubSubName, string topicName, Guid correlationId, OutboxMessage<TMessage> message, CancellationToken cancellationToken)
-    {
-        var outboxNo = OutboxPatternHelper.DetermineOutboxNo(correlationId, _outboxOptions.Value);
+        var outboxNo = await _outboxSelector.DetermineOutboxNo(pubSubName, topicName, message, cancellationToken);
         return await CreateMessage(pubSubName, topicName, outboxNo, message, cancellationToken);
     }
 

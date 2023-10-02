@@ -1,4 +1,4 @@
-﻿namespace PublisherService.Infrastructure.Database.Postgres.OutboxPattern.Utility;
+﻿namespace PublisherService.Core.Database.OutboxPattern.Utility;
 
 public class OutboxPatternOptions
 {
