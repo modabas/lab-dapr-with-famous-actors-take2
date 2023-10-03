@@ -14,6 +14,6 @@ public class DbPartitionCreationStartupTask : IStartupTask
     public async Task Execute(CancellationToken cancellationToken)
     {
         var grain = this._grainFactory.GetGrain<IOutboxTablePartitionCreationGrain>(0);
-        await grain.Poke();
+        await grain.RegisterOrUpdateReminder();
     }
 }

@@ -24,30 +24,9 @@ public class OutboxTablePartitionCreationGrain : Grain, IOutboxTablePartitionCre
         _options = options;
     }
 
-    public Task<bool> IsBusy()
+    public async Task<IGrainReminder> RegisterOrUpdateReminder()
     {
-        return Task.FromResult(_isBusy);
-    }
-
-    public Task Poke()
-    {
-        return Task.CompletedTask;
-    }
-
-    public override async Task OnActivateAsync(CancellationToken cancellationToken)
-    {
-        try
-        {
-            //on activation, register self as reminder
-            //activation is done by a seperate startup task
-            await this.RegisterOrUpdateReminder(ReminderName, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(5));
-            await base.OnActivateAsync(cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "OnActivateAsync failed");
-            throw;
-        }
+        return await this.RegisterOrUpdateReminder(ReminderName, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(5));
     }
 
     public async Task ReceiveReminder(string reminderName, TickStatus status)
