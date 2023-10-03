@@ -44,7 +44,10 @@ public class OutboxProcessor : IOutboxProcessor
             await _executingTask;
         }
         catch { }
-        _tokenSource.Dispose();
+        finally
+        {
+            _tokenSource.Dispose();
+        }
     }
 
     public Task Start()
@@ -70,12 +73,7 @@ public class OutboxProcessor : IOutboxProcessor
         var tasks = new List<Task>();
         for (var outboxNo = 0; outboxNo < outboxCount; outboxNo++)
         {
-            //for closure problem
-            var currentOutboxNo = outboxNo;
-            tasks.Add(Task.Run(() =>
-            {
-                return ProcessOutbox(currentOutboxNo, cancellationToken);
-            }, cancellationToken));
+            tasks.Add(ProcessOutbox(outboxNo, cancellationToken));
         }
         await Task.WhenAll(tasks);
     }
