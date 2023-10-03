@@ -8,7 +8,7 @@ namespace PublisherService.Infrastructure.Database.Postgres.Dapper.Extensions;
 
 public static class DbContextExtensions
 {
-    public static void AddMap<TEntity>(this DbContext dbContext, IEntityMap<TEntity> mapper) where TEntity : class
+    public static void AddMap<TEntity>(this OutboxPatternDbContext dbContext, IEntityMap<TEntity> mapper) where TEntity : class
     {
         if (FluentMapper.EntityMaps.TryAdd(typeof(TEntity), mapper))
         {

@@ -5,7 +5,6 @@ using PublisherService.Core.Database.OutboxPattern.Dto;
 using PublisherService.Core.Database.OutboxPattern.OutboxSelector;
 using PublisherService.Core.Database.OutboxPattern.Service;
 using PublisherService.Core.Database.OutboxPattern.Utility;
-using PublisherService.Core.Database.Service;
 using Shared.OutboxPattern;
 using Shared.Utility;
 using System.Data.Common;
@@ -14,13 +13,13 @@ namespace PublisherService.Infrastructure.Database.Postgres.OutboxPattern.Servic
 
 public class OutboxPublisher : IOutboxPublisher
 {
-    private readonly IDbContext _dbContext;
+    private readonly IOutboxPatternDbContext _dbContext;
     private readonly ILogger<OutboxPublisher> _logger;
     private readonly IOptions<OutboxPatternOptions> _outboxOptions;
     private readonly IOutboxSelector _outboxSelector;
 
     public OutboxPublisher(ILogger<OutboxPublisher> logger,
-        IDbContext dbContext,
+        IOutboxPatternDbContext dbContext,
         IOptions<OutboxPatternOptions> outboxOptions,
         IOutboxSelector outboxSelector)
     {

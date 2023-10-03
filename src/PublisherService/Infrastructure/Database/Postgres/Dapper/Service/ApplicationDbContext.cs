@@ -1,14 +1,12 @@
 ﻿using Dapper.FluentMap;
-using Microsoft.Extensions.Options;
-using PublisherService.Core.Database.Config;
+using PublisherService.Core.Database.OutboxPattern.Service;
 using PublisherService.Infrastructure.Database.Postgres.Dapper.GreetService.Mapper;
-using PublisherService.Infrastructure.Database.Postgres.OutboxPattern.Service;
 
 namespace PublisherService.Infrastructure.Database.Postgres.Dapper.Service;
 
-public class ApplicationDbContext : DbContext
+public class ApplicationDbContext : ApplicationDbContextBase
 {
-    public ApplicationDbContext(IOptionsMonitor<ServiceDbOptions> dbOptions) : base(dbOptions)
+    public ApplicationDbContext(IOutboxPatternDbContext outboxPatternDbContext) : base(outboxPatternDbContext)
     {
         FluentMapper.Initialize(config =>
         {

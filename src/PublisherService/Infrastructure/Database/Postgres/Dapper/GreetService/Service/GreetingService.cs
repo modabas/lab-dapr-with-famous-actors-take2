@@ -1,8 +1,8 @@
 ﻿using Dapper;
 using PublisherService.Core.Database.OutboxPattern.Service;
-using PublisherService.Core.Database.Service;
 using PublisherService.Core.GreetService.Entity;
 using PublisherService.Core.GreetService.Service;
+using PublisherService.Infrastructure.Database.Postgres.Dapper.Service;
 using PublisherService.Infrastructure.Database.Postgres.OutboxPattern.Extensions;
 using Shared.GreetService.Events;
 using Shared.OutboxPattern;
@@ -11,10 +11,10 @@ namespace PublisherService.Infrastructure.Database.Postgres.Dapper.GreetService.
 
 public class GreetingService : IGreetingService
 {
-    private readonly IDbContext _dbContext;
+    private readonly IApplicationDbContext _dbContext;
     private readonly IOutboxPublisher _outboxPublisher;
 
-    public GreetingService(IDbContext dbContext, IOutboxPublisher outboxPublisher)
+    public GreetingService(IApplicationDbContext dbContext, IOutboxPublisher outboxPublisher)
     {
         _dbContext = dbContext;
         _outboxPublisher = outboxPublisher;

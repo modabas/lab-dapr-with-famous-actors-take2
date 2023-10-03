@@ -1,8 +1,8 @@
 ﻿using Dapper;
 using Microsoft.Extensions.Options;
 using Orleans.Runtime;
+using PublisherService.Core.Database.OutboxPattern.Service;
 using PublisherService.Core.Database.OutboxPattern.Utility;
-using PublisherService.Core.Database.Service;
 
 namespace PublisherService.Infrastructure.Database.Postgres.OutboxPattern.Orleans;
 
@@ -12,16 +12,16 @@ public class OutboxTablePartitionCreationGrain : Grain, IOutboxTablePartitionCre
     private const string ReminderName = "DbPartitionCreationGrain_Outbox_Postgres";
 
     private readonly ILogger<OutboxTablePartitionCreationGrain> _logger;
-    private readonly IDbContext _dbContext;
-    private readonly IOptions<OutboxPatternOptions> _outboxOptions;
+    private readonly IOutboxPatternDbContext _dbContext;
+    private readonly IOptions<OutboxPatternOptions> _options;
 
     public OutboxTablePartitionCreationGrain(ILogger<OutboxTablePartitionCreationGrain> logger, 
-        IDbContext dbContext, 
-        IOptions<OutboxPatternOptions> outboxOptions)
+        IOutboxPatternDbContext dbContext, 
+        IOptions<OutboxPatternOptions> options)
     {
         _logger = logger;
         _dbContext = dbContext;
-        _outboxOptions = outboxOptions;
+        _options = options;
     }
 
     public Task<bool> IsBusy()
@@ -74,7 +74,7 @@ public class OutboxTablePartitionCreationGrain : Grain, IOutboxTablePartitionCre
 
     private string GetCreatePartitionCommandForOutboxTable(int outboxNo, DateTime date)
     {
-        var schemaName = OutboxPatternHelper.GetSchemaName(_outboxOptions.Value);
+        var schemaName = OutboxPatternHelper.GetSchemaName(_options.Value);
         //if not exists, create daily partitions 
         var partitionTableName = $"tbl_outbox_o{outboxNo:0}_y{date.Year:0000}_m{date.Month:00}_d{date.Day:00}";
         var commandText =
