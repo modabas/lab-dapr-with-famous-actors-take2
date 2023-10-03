@@ -1,6 +1,6 @@
 ﻿using System.Data.Common;
 
-namespace PublisherService.Infrastructure.Database.Postgres.Dapper.Service;
+namespace PublisherService.Infrastructure.Database.Postgres.Dapper.Context;
 
 public interface IApplicationDbContext
 {

@@ -1,7 +1,7 @@
 ﻿using PublisherService.Core.Database.OutboxPattern.Service;
 using System.Data.Common;
 
-namespace PublisherService.Infrastructure.Database.Postgres.Dapper.Service;
+namespace PublisherService.Infrastructure.Database.Postgres.Dapper.Context;
 
 public abstract class ApplicationDbContextBase : IApplicationDbContext
 {

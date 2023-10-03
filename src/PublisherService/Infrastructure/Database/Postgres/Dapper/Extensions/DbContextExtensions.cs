@@ -2,13 +2,13 @@
 using Dapper.FluentMap.TypeMaps;
 using Dapper.FluentMap;
 using Dapper;
-using PublisherService.Infrastructure.Database.Postgres.OutboxPattern.Service;
+using PublisherService.Infrastructure.Database.Postgres.Dapper.Context;
 
 namespace PublisherService.Infrastructure.Database.Postgres.Dapper.Extensions;
 
 public static class DbContextExtensions
 {
-    public static void AddMap<TEntity>(this OutboxPatternDbContext dbContext, IEntityMap<TEntity> mapper) where TEntity : class
+    public static void AddMap<TEntity>(this IApplicationDbContext dbContext, IEntityMap<TEntity> mapper) where TEntity : class
     {
         if (FluentMapper.EntityMaps.TryAdd(typeof(TEntity), mapper))
         {

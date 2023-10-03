@@ -2,7 +2,7 @@
 using PublisherService.Core.Database.OutboxPattern.Service;
 using PublisherService.Core.GreetService.Entity;
 using PublisherService.Core.GreetService.Service;
-using PublisherService.Infrastructure.Database.Postgres.Dapper.Service;
+using PublisherService.Infrastructure.Database.Postgres.Dapper.Context;
 using PublisherService.Infrastructure.Database.Postgres.OutboxPattern.Extensions;
 using Shared.GreetService.Events;
 using Shared.OutboxPattern;

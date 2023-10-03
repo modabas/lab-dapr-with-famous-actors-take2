@@ -35,12 +35,12 @@ public class Program
         builder.Services.AddTransient<IOutboxSelector, RandomOutboxSelector>();
 
         //Greet service Dapper implementation
-        //builder.Services.AddSingleton<Infrastructure.Database.Postgres.Dapper.Service.IApplicationDbContext, Infrastructure.Database.Postgres.Dapper.Service.ApplicationDbContext>();
-        //builder.Services.AddScoped<IGreetingService, Infrastructure.Database.Postgres.Dapper.GreetService.Service.GreetingService>();
+        builder.Services.AddSingleton<Infrastructure.Database.Postgres.Dapper.Context.IApplicationDbContext, Infrastructure.Database.Postgres.Dapper.Context.ApplicationDbContext>();
+        builder.Services.AddScoped<IGreetingService, Infrastructure.Database.Postgres.Dapper.GreetService.Service.GreetingService>();
 
         //Greet service Entity fw implementation
-        builder.Services.AddDbContext<Infrastructure.Database.Postgres.EntityFw.Context.ApplicationDbContext>();
-        builder.Services.AddScoped<IGreetingService, Infrastructure.Database.Postgres.EntityFw.GreetService.Service.GreetingService>();
+        //builder.Services.AddDbContext<Infrastructure.Database.Postgres.EntityFw.Context.ApplicationDbContext>();
+        //builder.Services.AddScoped<IGreetingService, Infrastructure.Database.Postgres.EntityFw.GreetService.Service.GreetingService>();
 
 
         builder.Services.AddSingleton<DaprClient>(new DaprClientBuilder().Build());

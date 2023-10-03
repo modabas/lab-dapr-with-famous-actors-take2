@@ -2,7 +2,7 @@
 using PublisherService.Core.Database.OutboxPattern.Service;
 using PublisherService.Infrastructure.Database.Postgres.Dapper.GreetService.Mapper;
 
-namespace PublisherService.Infrastructure.Database.Postgres.Dapper.Service;
+namespace PublisherService.Infrastructure.Database.Postgres.Dapper.Context;
 
 public class ApplicationDbContext : ApplicationDbContextBase
 {
