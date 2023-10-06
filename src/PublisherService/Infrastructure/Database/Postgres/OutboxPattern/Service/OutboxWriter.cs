@@ -11,14 +11,14 @@ using System.Data.Common;
 
 namespace PublisherService.Infrastructure.Database.Postgres.OutboxPattern.Service;
 
-public class OutboxPublisher : IOutboxPublisher
+public class OutboxWriter : IOutboxWriter
 {
     private readonly IOutboxPatternDbContext _dbContext;
-    private readonly ILogger<OutboxPublisher> _logger;
+    private readonly ILogger<OutboxWriter> _logger;
     private readonly IOptions<OutboxPatternOptions> _outboxOptions;
     private readonly IOutboxSelector _outboxSelector;
 
-    public OutboxPublisher(ILogger<OutboxPublisher> logger,
+    public OutboxWriter(ILogger<OutboxWriter> logger,
         IOutboxPatternDbContext dbContext,
         IOptions<OutboxPatternOptions> outboxOptions,
         IOutboxSelector outboxSelector)

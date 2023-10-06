@@ -12,9 +12,9 @@ namespace PublisherService.Infrastructure.Database.Postgres.Dapper.GreetService.
 public class GreetingService : IGreetingService
 {
     private readonly IApplicationDbContext _dbContext;
-    private readonly IOutboxPublisher _outboxPublisher;
+    private readonly IOutboxWriter _outboxPublisher;
 
-    public GreetingService(IApplicationDbContext dbContext, IOutboxPublisher outboxPublisher)
+    public GreetingService(IApplicationDbContext dbContext, IOutboxWriter outboxPublisher)
     {
         _dbContext = dbContext;
         _outboxPublisher = outboxPublisher;

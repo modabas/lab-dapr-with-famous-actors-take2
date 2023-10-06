@@ -10,10 +10,10 @@ namespace PublisherService.Infrastructure.Database.Postgres.EntityFw.GreetServic
 
 public class GreetingService : IGreetingService
 {
-    private readonly IOutboxPublisher _outboxPublisher;
+    private readonly IOutboxWriter _outboxPublisher;
     private readonly ApplicationDbContext _dbContext;
 
-    public GreetingService(IOutboxPublisher outboxPublisher, ApplicationDbContext dbContext)
+    public GreetingService(IOutboxWriter outboxPublisher, ApplicationDbContext dbContext)
     {
         _outboxPublisher = outboxPublisher;
         _dbContext = dbContext;

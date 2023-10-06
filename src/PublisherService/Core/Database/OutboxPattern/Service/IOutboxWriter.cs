@@ -4,7 +4,7 @@ using System.Data.Common;
 
 namespace PublisherService.Core.Database.OutboxPattern.Service;
 
-public interface IOutboxPublisher
+public interface IOutboxWriter
 {
     public DbTransaction? DbTransaction { get; set; }
 
