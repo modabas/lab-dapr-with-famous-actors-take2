@@ -11,7 +11,10 @@ Publisher and consumer services communicate over Dapr event publishing utilizing
 But since this is a .Net project, we can cast most famous actors for our project by utilizing Microsoft Orleans for our dapr enabled services. Since Orleans is around for much longer, it has many more features not yet implemented by Dapr actors.
 
 ## Outbox Pattern:
-Whenever data is written to a table in Postgres db, an event can be written to an outbox table in same Postgres Db but in a different schema within same DbTransaction. Records in outbox table are processed seperately and published to Dapr.
+Whenever data is written to a table in Postgres db, an event can be written to an outbox table in same Postgres Db within same DbTransaction.
+
+## Change Data Capture:
+When a record is added to outbox table, a listener service is notified via [Postgres Logical Replication](https://www.npgsql.org/doc/replication.html) which processes and publishes said record to Dapr.
 
 ## Debugging:
 [Dapr Sidekick for .Net](https://github.com/man-group/dapr-sidekick-dotnet) helps immensely to setting up a Dapr enabled .Net application project and also debugging experience.
@@ -29,7 +32,7 @@ This project uses OpenTelemetry tracing/logging and exports them to Elasticsearc
 docker run -dt --restart unless-stopped -d -p 5432:5432 --name=postgres15.1 -e POSTGRES_PASSWORD=password postgres:15.1 -c 'wal_level=logical'
 ```
 
-2. [Script](https://github.com/modabas/lab-dapr-with-famous-actors-take2/blob/master/src/PublisherService/Infrastructure/Database/Postgres/OutboxPattern/Scripts/Init.txt) for creating Postgresql Db tables used in this project.
+2. [Script](https://github.com/modabas/lab-dapr-with-famous-actors-take2/blob/master/src/PublisherService/Infrastructure/Database/Postgres/OutboxPattern/Scripts/Init.txt) for creating Postgresql Db tables and setting up logical replication used in this project.
 
 3. Dapr configuration files are in [components folder](https://github.com/modabas/lab-dapr-with-famous-actors-take2/tree/master/components). Projects are configured to use these files on startup by Dapr Sidekick configuration.
 
@@ -40,5 +43,4 @@ docker run -dt --restart unless-stopped -d -p 5672:5672 -p 15672:15672 --hostnam
 Rabbitmq user/password used by Dapr is configured in "host" parameter value in dapr pubsub.yaml configuration file. A user/password pair with these values can be created via RabbitMq management.
 
 ## More References
-1. [Postgres Logical Replication](https://www.npgsql.org/doc/replication.html)
-2. [Push-based Outbox Pattern with Postgres Logical Replication](https://event-driven.io/en/push_based_outbox_pattern_with_postgres_logical_replication/)
+1. [Push-based Outbox Pattern with Postgres Logical Replication](https://event-driven.io/en/push_based_outbox_pattern_with_postgres_logical_replication/)
