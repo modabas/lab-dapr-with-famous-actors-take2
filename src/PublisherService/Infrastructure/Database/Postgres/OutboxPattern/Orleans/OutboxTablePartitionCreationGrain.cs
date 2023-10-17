@@ -1,5 +1,4 @@
-﻿using Dapper;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using Orleans.Runtime;
 using PublisherService.Core.Database.OutboxPattern.Service;
 using PublisherService.Core.Database.OutboxPattern.Utility;
@@ -51,7 +50,7 @@ public class OutboxTablePartitionCreationGrain : Grain, IOutboxTablePartitionCre
         }
     }
 
-    private string GetCreatePartitionCommandForOutboxTable(int outboxNo, DateTime date)
+    private string GetCreatePartitionCommandForOutboxTable(int outboxNo, DateOnly date)
     {
         var schemaName = OutboxPatternHelper.GetSchemaName(_options.Value);
         //if not exists, create daily partitions 
@@ -69,12 +68,23 @@ public class OutboxTablePartitionCreationGrain : Grain, IOutboxTablePartitionCre
         return commandText;
     }
 
-    private async Task<int> CreatePartitionForOutboxTable(int outboxNo, DateTime date)
+    private async Task<int> CreatePartitionForOutboxTable(int outboxNo, DateOnly date)
     {
-        using (var conn = _dbContext.GetConnection())
+        try
         {
             var sql = GetCreatePartitionCommandForOutboxTable(outboxNo, date);
-            return await conn.ExecuteAsync(new CommandDefinition(sql));
+            using (var conn = _dbContext.GetConnection())
+            {
+                await conn.OpenAsync();
+                var command = conn.CreateCommand();
+                command.CommandText = sql;
+                return await command.ExecuteNonQueryAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creating partition for outbox table. OutboxNo: {outboxNo}, Date: {partitionDate}", outboxNo, date);
+            return -1;
         }
     }
 
@@ -87,7 +97,8 @@ public class OutboxTablePartitionCreationGrain : Grain, IOutboxTablePartitionCre
             //for each outbox
             for (var outboxNo = 0; outboxNo < OutboxPatternHelper.MaxOutboxCount; outboxNo++)
             {
-                await Task.WhenAll(CreatePartitionForOutboxTable(outboxNo, todayUtc), CreatePartitionForOutboxTable(outboxNo, todayUtc.AddDays(1)));
+                await Task.WhenAll(CreatePartitionForOutboxTable(outboxNo, DateOnly.FromDateTime(todayUtc)), 
+                    CreatePartitionForOutboxTable(outboxNo, DateOnly.FromDateTime(todayUtc.AddDays(1))));
             }
         }
         catch (Exception ex)

@@ -98,6 +98,8 @@ public class OutboxWriter : IOutboxWriter
         {
             using (var conn = _dbContext.GetConnection())
             {
+                await conn.OpenAsync(cancellationToken);
+                cancellationToken.ThrowIfCancellationRequested();
                 return await CreateMessageInternal(conn, null);
             }
         }
