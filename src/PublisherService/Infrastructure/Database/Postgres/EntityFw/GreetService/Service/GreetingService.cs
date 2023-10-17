@@ -10,18 +10,18 @@ namespace PublisherService.Infrastructure.Database.Postgres.EntityFw.GreetServic
 
 public class GreetingService : IGreetingService
 {
-    private readonly IOutboxWriter _outboxPublisher;
+    private readonly IOutboxPersistor _outboxPersistor;
     private readonly ApplicationDbContext _dbContext;
 
-    public GreetingService(IOutboxWriter outboxPublisher, ApplicationDbContext dbContext)
+    public GreetingService(IOutboxPersistor outboxPersistor, ApplicationDbContext dbContext)
     {
-        _outboxPublisher = outboxPublisher;
+        _outboxPersistor = outboxPersistor;
         _dbContext = dbContext;
     }
 
     public async Task<GreetingEntity> CreateGreetingAndEvent(string from, string to, string message, CancellationToken cancellationToken)
     {
-        using (var tran = _dbContext.Database.BeginTransaction(_outboxPublisher))
+        using (var tran = _dbContext.Database.BeginTransaction(_outboxPersistor))
         {
             var entity = new GreetingEntity()
             {
@@ -31,7 +31,7 @@ public class GreetingService : IGreetingService
             };
             _dbContext.Greetings.Add(entity);
             var greetingEvent = new GreetingReceived(from, to, message);
-            await _outboxPublisher.CreateMessage("take2pubsub", "greetings", new OutboxMessage<GreetingReceived>(greetingEvent), cancellationToken);
+            await _outboxPersistor.CreateMessage("take2pubsub", "greetings", new OutboxMessage<GreetingReceived>(greetingEvent), cancellationToken);
             await _dbContext.SaveChangesAsync(cancellationToken);
             await tran.CommitAsync(cancellationToken);
             return entity;

@@ -12,12 +12,12 @@ namespace PublisherService.Infrastructure.Database.Postgres.Dapper.GreetService.
 public class GreetingService : IGreetingService
 {
     private readonly IApplicationDbContext _dbContext;
-    private readonly IOutboxWriter _outboxPublisher;
+    private readonly IOutboxPersistor _outboxPersistor;
 
-    public GreetingService(IApplicationDbContext dbContext, IOutboxWriter outboxPublisher)
+    public GreetingService(IApplicationDbContext dbContext, IOutboxPersistor outboxPersistor)
     {
         _dbContext = dbContext;
-        _outboxPublisher = outboxPublisher;
+        _outboxPersistor = outboxPersistor;
     }
 
     public async Task<GreetingEntity> CreateGreetingAndEvent(string from, string to, string message, CancellationToken cancellationToken)
@@ -26,7 +26,7 @@ public class GreetingService : IGreetingService
         {
             await conn.OpenAsync(cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
-            using (var tran = conn.BeginTransaction(_outboxPublisher))
+            using (var tran = conn.BeginTransaction(_outboxPersistor))
             {
                 var sql = "INSERT INTO tbl_greeting (\"from\", \"to\", message) VALUES (@from, @to, @message) RETURNING *;";
                 var entity = await conn.QuerySingleOrDefaultAsync<GreetingEntity>(new CommandDefinition(sql, new { from, to, message }, tran, cancellationToken: cancellationToken));
@@ -36,7 +36,7 @@ public class GreetingService : IGreetingService
                     throw new ApplicationException("Cannot create greeting db entry.");
 
                 var greetingEvent = new GreetingReceived(from, to, message);
-                await _outboxPublisher.CreateMessage("take2pubsub", "greetings", new OutboxMessage<GreetingReceived>(greetingEvent), cancellationToken);
+                await _outboxPersistor.CreateMessage("take2pubsub", "greetings", new OutboxMessage<GreetingReceived>(greetingEvent), cancellationToken);
                 cancellationToken.ThrowIfCancellationRequested();
 
                 await tran.CommitAsync(cancellationToken);
