@@ -6,18 +6,13 @@ namespace PublisherService.Infrastructure.Database.Postgres.EntityFw.Context;
 
 public class ApplicationDbContext : DbContext
 {
-    private readonly string _apiSchema = "public";
-    private readonly string _connectionString;
+    private static readonly string _apiSchema = "public";
 
-    public ApplicationDbContext(IConfiguration configuration)
+    public static string ApiSchema => _apiSchema;
+
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+        :base(options)
     {
-        var connectionString = configuration.GetSection("ServiceDbOptions:ConnectionString").Value;
-        if (string.IsNullOrWhiteSpace(connectionString))
-        {
-            throw new InvalidOperationException("Connection string read from configuration cannot be null.");
-        }
-
-        _connectionString = connectionString;
     }
 
     public virtual DbSet<GreetingEntity> Greetings => Set<GreetingEntity>();
@@ -35,17 +30,4 @@ public class ApplicationDbContext : DbContext
 
     private void SeedDb(ModelBuilder modelBuilder) { }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        base.OnConfiguring(optionsBuilder);
-
-        optionsBuilder.UseNpgsql(_connectionString,
-            b =>
-            {
-                b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName);
-                b.MigrationsHistoryTable("__EFMigrationsHistory", _apiSchema);
-            });
-
-        optionsBuilder.UseSnakeCaseNamingConvention();
-    }
 }

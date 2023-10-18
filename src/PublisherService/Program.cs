@@ -10,9 +10,11 @@ using PublisherService.Core.Database.OutboxPattern.OutboxSelector;
 using PublisherService.Core.Database.OutboxPattern.Service;
 using PublisherService.Core.Database.OutboxPattern.Utility;
 using PublisherService.Core.GreetService.Service;
+using PublisherService.Infrastructure.Database.Postgres.EntityFw.Extensions;
 using PublisherService.Infrastructure.Database.Postgres.OutboxPattern.Orleans;
 using PublisherService.Infrastructure.Database.Postgres.OutboxPattern.Service;
 using System.Net;
+using System.Text;
 
 namespace PublisherService;
 
@@ -20,6 +22,9 @@ public class Program
 {
     public static void Main(string[] args)
     {
+        Console.InputEncoding = Encoding.UTF8;
+        Console.OutputEncoding = Encoding.UTF8;
+
         var builder = WebApplication.CreateBuilder(args);
 
         if (builder.Environment.IsDevelopment())
@@ -35,12 +40,12 @@ public class Program
         builder.Services.AddTransient<IOutboxSelector, RandomOutboxSelector>();
 
         //Greet service Dapper implementation
-        builder.Services.AddSingleton<Infrastructure.Database.Postgres.Dapper.Context.IApplicationDbContext, Infrastructure.Database.Postgres.Dapper.Context.ApplicationDbContext>();
-        builder.Services.AddScoped<IGreetingService, Infrastructure.Database.Postgres.Dapper.GreetService.Service.GreetingService>();
+        //builder.Services.AddSingleton<Infrastructure.Database.Postgres.Dapper.Context.IApplicationDbContext, Infrastructure.Database.Postgres.Dapper.Context.ApplicationDbContext>();
+        //builder.Services.AddScoped<IGreetingService, Infrastructure.Database.Postgres.Dapper.GreetService.Service.GreetingService>();
 
         //Greet service Entity fw implementation
-        //builder.Services.AddDbContext<Infrastructure.Database.Postgres.EntityFw.Context.ApplicationDbContext>();
-        //builder.Services.AddScoped<IGreetingService, Infrastructure.Database.Postgres.EntityFw.GreetService.Service.GreetingService>();
+        builder.Services.RegisterApplicationDbContext(builder.Configuration);
+        builder.Services.AddScoped<IGreetingService, Infrastructure.Database.Postgres.EntityFw.GreetService.Service.GreetingService>();
 
 
         builder.Services.AddSingleton<DaprClient>(new DaprClientBuilder().Build());

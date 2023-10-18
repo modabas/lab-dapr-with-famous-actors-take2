@@ -5,6 +5,7 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Orleans.Configuration;
 using System.Net;
+using System.Text;
 
 namespace ConsumerService;
 
@@ -12,6 +13,9 @@ public class Program
 {
     public static void Main(string[] args)
     {
+        Console.InputEncoding = Encoding.UTF8;
+        Console.OutputEncoding = Encoding.UTF8;
+
         var builder = WebApplication.CreateBuilder(args);
 
         if (builder.Environment.IsDevelopment())
