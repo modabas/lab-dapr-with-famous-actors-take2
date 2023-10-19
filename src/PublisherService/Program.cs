@@ -36,6 +36,7 @@ public class Program
         builder.Services.Configure<ServiceDbOptions>(builder.Configuration.GetSection("ServiceDbOptions"));
         builder.Services.Configure<OutboxPatternOptions>(builder.Configuration.GetSection("OutboxPatternOptions"));
         builder.Services.AddSingleton<IOutboxPatternDbContext, OutboxPatternDbContext>();
+        builder.Services.AddSingleton<IOutboxTablePartitionCreationService, OutboxTablePartitionCreationService>();
         builder.Services.AddSingleton<IOutboxPersistor, OutboxPersistor>();
         builder.Services.AddTransient<IOutboxSelector, RandomOutboxSelector>();
 
