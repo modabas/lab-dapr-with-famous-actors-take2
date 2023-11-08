@@ -3,6 +3,6 @@
 public class OutboxMessageKey
 {
     public short OutboxNo { get; set; }
-    public DateTime CreatedDate { get; set; }
-    public long Position { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
+    public Ulid MessageId { get; set; }
 }

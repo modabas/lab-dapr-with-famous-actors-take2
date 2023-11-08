@@ -30,7 +30,7 @@ internal class Program
                         if (message is InsertMessage insertMessage)
                         {
                             var outboxMessage = await GetMessage(insertMessage, cancellationToken);
-                            var messageContent = JsonHelper.SerializeJson(outboxMessage);
+                            var messageContent = JsonHelper.SerializeToJsonUtf8Bytes(outboxMessage);
                             Console.WriteLine($"Fetched outbox message with content: {messageContent}");
                         }
 

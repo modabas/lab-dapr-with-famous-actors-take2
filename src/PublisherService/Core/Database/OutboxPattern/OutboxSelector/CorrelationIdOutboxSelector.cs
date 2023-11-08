@@ -22,7 +22,7 @@ public class CorrelationIdOutboxSelector : IOutboxSelector
         return Task.FromResult(ConvertGuidToShort(message.CorrelationId, outboxCount));
     }
 
-    private static short ConvertGuidToShort(Guid correlationId, short maxValue)
+    private static short ConvertGuidToShort(Ulid correlationId, short maxValue)
     {
         byte[] bytes = correlationId.ToByteArray();
         int sum = 0;

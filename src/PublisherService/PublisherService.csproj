@@ -12,12 +12,9 @@
     <PackageReference Include="Dapr.AspNetCore" Version="1.10.0" />
     <PackageReference Include="EFCore.NamingConventions" Version="7.0.2" />
     <PackageReference Include="Man.Dapr.Sidekick.AspNetCore" Version="1.2.1" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.10" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.10" />
     <PackageReference Include="Microsoft.Orleans.Reminders" Version="7.1.1" />
     <PackageReference Include="Microsoft.Orleans.Server" Version="7.1.1" />
-    <PackageReference Include="Npgsql" Version="7.0.2" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.3" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.11" />
     <PackageReference Include="Npgsql.OpenTelemetry" Version="7.0.2" />
     <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.6.0" />
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.6.0" />

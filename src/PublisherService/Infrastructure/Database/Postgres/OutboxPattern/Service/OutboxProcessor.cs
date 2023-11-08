@@ -81,32 +81,42 @@ public class OutboxProcessor : IOutboxProcessor
     private async Task<ReplicationMessage> GetMessage(InsertMessage message, CancellationToken cancellationToken)
     {
         var colNo = 0;
-        var pubSubName = string.Empty;
-        var topicName = string.Empty;
-        var messageType = string.Empty;
+        var replicationMessage = new ReplicationMessage();
         await foreach (var column in message.NewRow)
         {
             switch (colNo)
             {
+                case 0:
+                    replicationMessage.MessageId = new Ulid(await column.Get<Guid>(cancellationToken));
+                    break;
+
                 case 1:
-                    pubSubName = await column.Get<string>(cancellationToken);
+                    replicationMessage.CorrelationId = new Ulid(await column.Get<Guid>(cancellationToken));
                     break;
 
                 case 2:
-                    topicName = await column.Get<string>(cancellationToken);
+                    replicationMessage.PubSubName = await column.Get<string>(cancellationToken);
+                    break;
+
+                case 3:
+                    replicationMessage.TopicName = await column.Get<string>(cancellationToken);
+                    break;
+
+                case 4:
+                    replicationMessage.CreatedAt = await column.Get<DateTimeOffset>(cancellationToken);
+                    break;
+
+                case 5:
+                    replicationMessage.MessageType = await column.Get<string>(cancellationToken);
                     break;
 
                 case 6:
-                    using (var ms = new MemoryStream())
-                    {
-                        await column.GetStream().CopyToAsync(ms, cancellationToken);
-                        return new ReplicationMessage()
-                        {
-                            Message = new ReadOnlyMemory<byte>(ms.ToArray()),
-                            PubSubName = pubSubName,
-                            TopicName = topicName
-                        };
-                    }
+                    replicationMessage.Message = new ReadOnlyMemory<byte>(await column.Get<byte[]>(cancellationToken));
+                    break;
+
+                case 7:
+                    replicationMessage.OutboxNo = await column.Get<short>(cancellationToken);
+                    return replicationMessage;
 
                 default:
                     break;
@@ -130,7 +140,7 @@ public class OutboxProcessor : IOutboxProcessor
 
                 // The following will loop until the cancellation token is triggered, and will process messages coming from PostgreSQL:
                 await foreach (var message in conn.StartReplication(
-                    slot, new PgOutputReplicationOptions($"pub_outbox{outboxNo:0}", 1), cancellationToken))
+                    slot, new PgOutputReplicationOptions($"pub_outbox{outboxNo:0}", 1, binary: true), cancellationToken))
                 {
                     if (message is InsertMessage insertMessage)
                     {
@@ -166,8 +176,13 @@ public class OutboxProcessor : IOutboxProcessor
 
     private class ReplicationMessage
     {
+        public Ulid MessageId { get; set; }
+        public Ulid CorrelationId { get; set; }
         public string PubSubName { get; set; } = string.Empty;
         public string TopicName { get; set; } = string.Empty;
+        public DateTimeOffset CreatedAt { get; set; }
+        public string MessageType { get; set; } = string.Empty;
         public ReadOnlyMemory<byte>? Message { get; set; }
+        public short OutboxNo { get; set; }
     }
 }

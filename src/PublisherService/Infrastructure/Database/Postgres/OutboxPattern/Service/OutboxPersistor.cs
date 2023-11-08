@@ -75,13 +75,13 @@ public class OutboxPersistor : IOutboxPersistor
 
     private async Task<OutboxMessageKey> CreateMessage<TMessage>(string pubSubName, string topicName, short outboxNo, OutboxMessage<TMessage> message, CancellationToken cancellationToken)
     {
-        var messageJsonString = JsonHelper.SerializeJson(message);
+        var messageJsonString = JsonHelper.SerializeToJsonUtf8Bytes(message);
         var messageType = message.GetType().AssemblyQualifiedName;
         var schemaName = OutboxPatternHelper.GetSchemaName(_outboxOptions.Value);
         var sql = 
-            @$"INSERT INTO {schemaName}.tbl_outbox (pubsub_name, topic_name, message_content, message_type, outbox_no) 
-             VALUES (@pubsub_name, @topic_name, @message_content, @message_type, @outbox_no) 
-             RETURNING created_date, position;";
+            @$"INSERT INTO {schemaName}.tbl_outbox (message_id, correlation_id, pubsub_name, topic_name, message_content, message_type, outbox_no) 
+             VALUES (@message_id, @correlation_id, @pubsub_name, @topic_name, @message_content, @message_type, @outbox_no) 
+             RETURNING created_at;";
 
         if (UseTransaction())
         {
@@ -109,6 +109,8 @@ public class OutboxPersistor : IOutboxPersistor
             var command = conn.CreateCommand();
             command.Transaction = tran;
             command.CommandText = sql;
+            command.Parameters.Add(new NpgsqlParameter("message_id", NpgsqlDbType.Uuid) { Value = message.Id.ToGuid() });
+            command.Parameters.Add(new NpgsqlParameter("correlation_id", NpgsqlDbType.Uuid) { Value = message.CorrelationId.ToGuid() });
             command.Parameters.Add(new NpgsqlParameter("pubsub_name", NpgsqlDbType.Text) { Value = pubSubName });
             command.Parameters.Add(new NpgsqlParameter("topic_name", NpgsqlDbType.Text) { Value = topicName });
             command.Parameters.Add(new NpgsqlParameter("message_content", NpgsqlDbType.Jsonb) { Value = messageJsonString });
@@ -127,8 +129,8 @@ public class OutboxPersistor : IOutboxPersistor
                     yield return new()
                     {
                         OutboxNo = outboxNo,
-                        CreatedDate = Convert.ToDateTime(reader[0]),
-                        Position = Convert.ToInt64(reader[1])
+                        CreatedAt = DateTime.SpecifyKind(Convert.ToDateTime(reader[0]), DateTimeKind.Utc),
+                        MessageId = message.Id
                     };
                 }
             }

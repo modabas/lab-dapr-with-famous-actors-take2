@@ -2,43 +2,42 @@
 
 CREATE TABLE IF NOT EXISTS outbox_pattern.tbl_outbox
 (
-    "position" bigint NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 9223372036854775807 CACHE 1 ),
-    message_id uuid GENERATED ALWAYS AS (((message_content ->> 'Id'::text))::uuid) STORED,
+    message_id uuid NOT NULL,
+    correlation_id uuid NOT NULL,
     pubsub_name text COLLATE pg_catalog."default" NOT NULL,
     topic_name text COLLATE pg_catalog."default" NOT NULL,
     created_at timestamp with time zone NOT NULL DEFAULT now(),
-    created_date date NOT NULL DEFAULT (now())::date,
     message_type text COLLATE pg_catalog."default" NOT NULL,
     message_content jsonb NOT NULL,
     outbox_no smallint NOT NULL,
-    CONSTRAINT tbl_outbox_pkey PRIMARY KEY (outbox_no, created_date, "position")
+    CONSTRAINT tbl_outbox_pkey PRIMARY KEY (outbox_no, created_at, message_id)
 ) PARTITION BY RANGE (outbox_no);
 
 ALTER TABLE IF EXISTS outbox_pattern.tbl_outbox
     OWNER to postgres;
 
 CREATE TABLE outbox_pattern.tbl_outbox_o0 PARTITION OF outbox_pattern.tbl_outbox
-    FOR VALUES FROM (0) TO (1) PARTITION BY RANGE (created_date);
+    FOR VALUES FROM (0) TO (1) PARTITION BY RANGE (created_at);
 ALTER TABLE IF EXISTS outbox_pattern.tbl_outbox_o0
     OWNER to postgres;
 
 CREATE TABLE outbox_pattern.tbl_outbox_o1 PARTITION OF outbox_pattern.tbl_outbox
-    FOR VALUES FROM (1) TO (2) PARTITION BY RANGE (created_date);
+    FOR VALUES FROM (1) TO (2) PARTITION BY RANGE (created_at);
 ALTER TABLE IF EXISTS outbox_pattern.tbl_outbox_o1
     OWNER to postgres;
 
 CREATE TABLE outbox_pattern.tbl_outbox_o2 PARTITION OF outbox_pattern.tbl_outbox
-    FOR VALUES FROM (2) TO (3) PARTITION BY RANGE (created_date);
+    FOR VALUES FROM (2) TO (3) PARTITION BY RANGE (created_at);
 ALTER TABLE IF EXISTS outbox_pattern.tbl_outbox_o2
     OWNER to postgres;
 
 CREATE TABLE outbox_pattern.tbl_outbox_o3 PARTITION OF outbox_pattern.tbl_outbox
-    FOR VALUES FROM (3) TO (4) PARTITION BY RANGE (created_date);
+    FOR VALUES FROM (3) TO (4) PARTITION BY RANGE (created_at);
 ALTER TABLE IF EXISTS outbox_pattern.tbl_outbox_o3
     OWNER to postgres;
 
 CREATE TABLE outbox_pattern.tbl_outbox_o4 PARTITION OF outbox_pattern.tbl_outbox
-    FOR VALUES FROM (4) TO (5) PARTITION BY RANGE (created_date);
+    FOR VALUES FROM (4) TO (5) PARTITION BY RANGE (created_at);
 ALTER TABLE IF EXISTS outbox_pattern.tbl_outbox_o4
     OWNER to postgres;
 

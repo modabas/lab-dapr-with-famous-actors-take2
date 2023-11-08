@@ -2,8 +2,8 @@
 
 public class OutboxMessage<TMessage>
 {
-    public Guid Id { get; set; }
-    public Guid CorrelationId { get; set; }
+    public Ulid Id { get; set; }
+    public Ulid CorrelationId { get; set; }
     public TMessage? Message { get; set; }
 
     public OutboxMessage()
@@ -11,9 +11,9 @@ public class OutboxMessage<TMessage>
 
     }
 
-    public OutboxMessage(TMessage message) : this(Guid.NewGuid(), Guid.NewGuid(), message) { }
+    public OutboxMessage(TMessage message) : this(Ulid.NewUlid(), Ulid.NewUlid(), message) { }
 
-    public OutboxMessage(Guid id, Guid correlationId, TMessage message)
+    public OutboxMessage(Ulid id, Ulid correlationId, TMessage message)
     {
         Id = id;
         CorrelationId = correlationId;
